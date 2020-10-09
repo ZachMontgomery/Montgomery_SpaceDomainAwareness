@@ -24,4 +24,14 @@ estimationErrors = calcErrors(xhat_errorInject, x, simpar);
 assert(norm(estimationErrors - dele) < 1e-11);
 x_errorCorrect = correctErrors(xhat_errorInject, dele, simpar);
 assert(norm(xhat - x_errorCorrect) < 1e-12);
+
+% store initialized vectors for latex table
+simpar.table.true = x;
+simpar.table.design = xhat;
+simpar.table.error = dele;
+simpar.table.estimate = xhat_errorInject;
+simpar.table.estError = estimationErrors;
+simpar.table.design_errorCorrected = x_errorCorrect;
+
+
 end

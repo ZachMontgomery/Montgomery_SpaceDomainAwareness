@@ -43,6 +43,8 @@ xhat_buff(:,1) = initialize_nav_state(x_buff(:,1), simpar);
 % ytilde_buff(:,1) = contMeas();
 %Initialize the measurement counter
 % k = 1;
+
+
 %Check that the error injection, calculation, and removal are all
 %consistent if the simpar.general.checkErrDefConstEnable is enabled.
 if simpar.general.checkErrDefConstEnable
