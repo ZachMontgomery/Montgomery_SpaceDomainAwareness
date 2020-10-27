@@ -14,6 +14,6 @@ function [ xhat ] = truth2nav( x, simparam )
 % Date: 21-May-2019 14:17:45
 % Reference: 
 % Copyright 2019 Utah State University
-A = [zeros(12,7*simparam.general.n_assets) eye(12)];
+A = [zeros(9,7*simparam.general.n_assets) eye(9)];
 xhat = A * x;
 end

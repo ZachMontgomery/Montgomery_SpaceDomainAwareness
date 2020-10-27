@@ -51,8 +51,8 @@ for i=1:n
 end
 % simparams.states.nx = max(t.end_idx);
 % simparams.states.nxe = max(t.error_end_idx);
-simparams.states.nx  = 12 + 7 * simparams.general.n_assets;
-simparams.states.nxe = 12 + 7 * simparams.general.n_assets;
+simparams.states.nx  = 9 + 7 * simparams.general.n_assets;
+simparams.states.nxe = 9 + 7 * simparams.general.n_assets;
 
 t = readtable(parameterFile,'sheet','navStateIdx');
 [n,~] = size(t);
@@ -65,7 +65,12 @@ simparams.states.nxf = max(t.end_idx);
 simparams.states.nxfe = max(t.error_end_idx);
 % simparams.states.nxf = 12
 
-
+%% Read Constants
+t = readtable(parameterFile,'sheet','Constants');
+[n,~] = size(t);
+for i=1:n
+    simparams.Constants.(t.Name{i}) = t.Value(i);
+end
 %% Create reference trajectory simparams
 %With all process noise, initial conditions, and measurement noise turned off)
 simparamsref = simparams;
@@ -77,4 +82,5 @@ truthParams = fieldnames(simparamsref.truth.params);
 for i=1:length(truthParams)
     simparamsref.truth.params.(truthParams{i}) = 0;
 end
+
 end

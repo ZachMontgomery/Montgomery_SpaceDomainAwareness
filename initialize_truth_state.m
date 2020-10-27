@@ -24,7 +24,7 @@ function [ x ] = initialize_truth_state(simpar)
 % vehicle states to the same thing every time, and randomize any sensor 
 % parameters.
 n_assets = simpar.general.n_assets;
-x = zeros(12+7*n_assets,1);
+x = zeros(9+7*n_assets,1);
 if n_assets >= 1
     x(1)  = simpar.general.ic.p1x;
     x(2)  = simpar.general.ic.p1y;
@@ -97,11 +97,11 @@ x(i+3)  = simpar.general.ic.ptz;
 x(i+4)  = simpar.general.ic.vtx;
 x(i+5)  = simpar.general.ic.vty;
 x(i+6)  = simpar.general.ic.vtz;
-x(i+7)  = simpar.general.ic.egx;
-x(i+8)  = simpar.general.ic.egy;
-x(i+9)  = simpar.general.ic.egz;
-x(i+10) = simpar.general.ic.ax;
-x(i+11) = simpar.general.ic.ay;
-x(i+12) = simpar.general.ic.az;
+% x(i+7)  = simpar.general.ic.egx;
+% x(i+8)  = simpar.general.ic.egy;
+% x(i+9)  = simpar.general.ic.egz;
+x(i+7) = simpar.general.ic.ax;
+x(i+8) = simpar.general.ic.ay;
+x(i+9) = simpar.general.ic.az;
 
 end

@@ -64,25 +64,27 @@ for i=2:nstep
     %   Realize a sample of process noise (don't forget to scale Q by 1/dt!)
     %   Define any inputs to the truth state DE
     %   Perform one step of RK4 integration
-    input_truth.u = [];
-    input_truth.w = [];
+    input_truth.w = zeros(length(x_buff(:,1)),1);
     input_truth.simpar = simpar;
     x_buff(:,i) = rk4('truthState_de', x_buff(:,i-1), input_truth,...
         simpar.general.dt);
     % Synthesize continuous sensor data at t_n
-    ytilde_buff(:,i) = contMeas();
+    input_meas.nu = zeros(simpar.general.n_assets,1);
+    input_meas.simpar = simpar;
+    ytilde_buff(:,i) = contMeas( x_buff(:,i), input_meas );
     % Propagate navigation states to t_n using sensor data from t_n-1
     %   Assign inputs to the navigation state DE
     %   Perform one step of RK4 integration
-    input_nav.ytilde = [];
+    input_nav.x = x_buff(:,i);
+    input_nav.ytilde = ytilde_buff(:,i);
     input_nav.simpar = simpar;
     xhat_buff(:,i) = rk4('navState_de', xhat_buff(:,i-1), input_nav, ...
         simpar.general.dt);
     % Propagate the covariance to t_n
-    input_cov.ytilde = [];
-    input_cov.simpar = simpar;
-    P_buff(:,:,i) = rk4('navCov_de', P_buff(:,:,i-1), input_cov, ...
-        simpar.general.dt);
+%     input_cov.ytilde = [];
+%     input_cov.simpar = simpar;
+%     P_buff(:,:,i) = rk4('navCov_de', P_buff(:,:,i-1), input_cov, ...
+%         simpar.general.dt);
     % Propagate the error state from tn-1 to tn if errorPropTestEnable == 1
     if simpar.general.errorPropTestEnable
         input_delx.xhat = xhat_buff(:,i-1);
@@ -113,16 +115,16 @@ for i=2:nstep
         %       Estimate the error state vector
         %       Update and save the covariance matrix
         %       Correct and save the navigation states
-        ztilde_example = example.synthesize_measurement();
-        ztildehat_example = example.predict_measurement();
-        H_example = example.compute_H();
-        example.validate_linearization();
-        res_example(:,k) = example.compute_residual();
-        resCov_example(:,k) = compute_residual_cov();
-        K_example_buff(:,:,k) = compute_Kalman_gain();
-        del_x = estimate_error_state_vector();
-        P_buff(:,:,k) = update_covariance();
-        xhat_buff(:,i) = correctErrors();
+%         ztilde_example = example.synthesize_measurement();
+%         ztildehat_example = example.predict_measurement();
+%         H_example = example.compute_H();
+%         example.validate_linearization();
+%         res_example(:,k) = example.compute_residual();
+%         resCov_example(:,k) = compute_residual_cov();
+%         K_example_buff(:,:,k) = compute_Kalman_gain();
+%         del_x = estimate_error_state_vector();
+%         P_buff(:,:,k) = update_covariance();
+%         xhat_buff(:,i) = correctErrors();
     end
     if verbose && mod(i,100) == 0
         fprintf('%0.1f%% complete\n',100 * i/nstep);
