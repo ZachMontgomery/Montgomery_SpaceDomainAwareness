@@ -13,4 +13,4 @@ sims/*
 .orig
 html/*
 *.mat
-sims\*
+.*

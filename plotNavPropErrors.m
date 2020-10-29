@@ -9,7 +9,7 @@ function h_figs = plotNavPropErrors(traj)
 %% Prelims
 h_figs = [];
 simpar = traj.simpar;
-Na = simpar.general_n_assets;
+Na = simpar.general.n_assets;
 
 %% plot positions
 h_figs(end+1) = figure;
@@ -22,6 +22,13 @@ xlabel('time (sec)')
 ylabel('km')
 legend('x','y','z')
 
+%% plot residuals
+h_figs(end+1) = figure;
+plot(traj.time_kalman, traj.navRes.tdoa)
+grid on;
+xlabel('time (sec)')
+ylabel('TDOA residual (sec)')
+legend('12','13','23')
 
 
 %%
