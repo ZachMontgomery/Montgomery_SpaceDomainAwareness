@@ -1,11 +1,9 @@
-function del_tdoa = synthesize_measurement( x, input )
-%synthesize_measurement_example synthesizes the discrete measurement
-%corrupted by noise
+function del_tdoa = predict_measurement( xhat, input )
+%predict_measurement_example predicts the discrete measurement
 
 %% extract input parameters
 simpar = input.simpar;
-nu = input.nu;
-
+x = input.chaserStates;
 %% extract position matrices
 % determine the number of chaser assets
 Na = simpar.general.n_assets;
@@ -22,10 +20,8 @@ for ii=1:Na
     % set the bias of chaser ii
     b(ii) = x(i+7);
 end
-% update indexer for target
-i = 7*Na;
 % set the position vector for the target
-ptarget = x(i+1:i+3);
+ptarget = xhat(1:3);
 %% calculate the tdoa measuremnts
 % compute the number of tdoa measurements
 N_tdoa = 0;
@@ -53,7 +49,7 @@ cnt = 0;
 for i=1:Na-1
     for j=i+1:Na
         cnt = cnt + 1;
-        del_tdoa(cnt) = del_tdoa_true(cnt) + nu(j) - nu(i) + b(j) - b(i);
+        del_tdoa(cnt) = del_tdoa_true(cnt) + b(j) - b(i);
     end
 end
 end
