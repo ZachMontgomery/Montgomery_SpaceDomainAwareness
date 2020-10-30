@@ -11,16 +11,12 @@ function [ dele ] = calcErrors( xhat, x, simpar )
 % Example Usage
 % [ dele ] = calcErrors( x_hat, x )
 
-% Author: Randy Christensen
-% Date: 21-May-2019 13:43:16
-% Reference:
-% Copyright 2019 Utah State University
 
 %Get size of input and verify that it is a single vector
 [~,m_x] = size(x);
 [~, m_xhat] = size(xhat);
 assert(m_x == m_xhat);
-xhat_true = truth2nav(x, simpar);
+xhat_true = truth2nav(x, simpar);           % Eq. 10 or 11
 
-dele = xhat_true - xhat;
+dele = xhat_true - xhat;                    % Eq. 9
 end

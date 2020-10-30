@@ -12,15 +12,15 @@ simpar = traj.simpar;
 Na = simpar.general.n_assets;
 
 %% plot positions
-h_figs(end+1) = figure;
-plot(traj.time_nav, traj.truthState(7*Na+1,:))
-hold all
-grid on;
-plot(traj.time_nav, traj.truthState(7*Na+2,:))
-plot(traj.time_nav, traj.truthState(7*Na+3,:))
-xlabel('time (sec)')
-ylabel('km')
-legend('x','y','z')
+% h_figs(end+1) = figure;
+% plot(traj.time_nav, traj.truthState(7*Na+1,:))
+% hold all
+% grid on;
+% plot(traj.time_nav, traj.truthState(7*Na+2,:))
+% plot(traj.time_nav, traj.truthState(7*Na+3,:))
+% xlabel('time (sec)')
+% ylabel('km')
+% legend('x','y','z')
 
 %% plot residuals
 h_figs(end+1) = figure;
@@ -30,6 +30,25 @@ xlabel('time (sec)')
 ylabel('TDOA residual (sec)')
 legend('12','13','23')
 
+%% plot actual TDOA measurements
+h_figs(end+1) = figure;
+plot(traj.time_kalman, traj.ztilde_tdoa)
+legend('12','13','23')
+xlabel('time (sec)')
+ylabel('TDOA true (sec)')
+grid on;
+
+%% plot estimation errors
+h_figs(end+1) = figure;
+plot(traj.time_nav, traj.est_error)
+xlabel('time (sec)')
+title('Estimation Errors Eq. (9)')
+grid on;
+legend('bias 1', 'bias 2', 'bias 3',...
+    'px target', 'py target', 'pz target',...
+    'vx target', 'vy target', 'vz target',...
+    'ax atmo', 'ay atmo', 'az atmo')
+    
 
 %%
 % m2km = 1/1000;

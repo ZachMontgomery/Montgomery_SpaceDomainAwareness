@@ -6,7 +6,8 @@ set(groot, 'defaultAxesTickLabelInterpreter','latex');
 %% Setup paths and matlab file object for saving data
 filename = getDateTimeStringFilename( 'sim' );
 paramfile = 'config.xlsx';
-savedir = strcat('.\sims\',filename,'\');
+savedir = strcat('./sims/',filename,'/');           % for Linux machines
+% savedir = strcat('.\sims\',filename,'\');         % for Windows machines
 mkdir(savedir)
 copyfile(paramfile,strcat(savedir,filename,'_config.xlsx'));
 [~,scriptname,~] = fileparts(mfilename('fullpath'));
@@ -24,7 +25,7 @@ savefile.filename = filename;
 checkProp = 1;
 runSingleMonteCarlo = 0;
 runMonteCarlo = 0;
-savefigs = 0;
+savefigs = 1;
 [ simpar, ~ ] = createSimParams( paramfile );
 %% Ensure certain flags are not enabled for certain runs
 if simpar.general.measLinerizationCheckEnable
@@ -54,7 +55,7 @@ if checkProp
             set(h,'renderer','Painters');
             saveas(h,fullfile(savedir,figfilename),'fig');
             saveas(h,fullfile(savedir,figfilename),'png');
-            saveas(h,fullfile(savedir,figfilename),'espc');
+%             saveas(h,fullfile(savedir,figfilename),'espc');
         end
         disp('Plots saved.') 
     end

@@ -14,20 +14,31 @@ nstep_aid = length(t_kalman);
 x_buff          = zeros(simpar.states.nx,nstep);
 xhat_buff       = zeros(simpar.states.nxf,nstep);
 delx_buff       = zeros(simpar.states.nxfe,nstep);
+est_error       = zeros(simpar.states.nxf,nstep);
 % Navigation covariance buffer
 % P_buff       = zeros(simpar.states.nxfe,simpar.states.nxfe,nstep);
 % Continuous measurement buffer
 % ytilde_buff     = zeros(simpar.general.n_inertialMeas,nstep);
 % Residual buffers (star tracker is included as an example)
 res_tdoa          = zeros(3,nstep_aid);
+% TDOA measurement buffers
+Ntdoa = 0;
+for i=1:simpar.general.n_assets
+    Ntdoa = Ntdoa + 1;
+end
+ztilde_tdoa    = zeros(Ntdoa,nstep_aid);
+ztildehat_tdoa = zeros(Ntdoa,nstep_aid);
 % resCov_tdoa       = zeros(3,3,nstep_aid);
 % K_tdoa_buff       = zeros(simpar.states.nxfe,3,nstep_aid);
-%% Initialize the navigation covariance matrix
+%% Initialize Vectors and matrices
+% % Initialize the navigation covariance matrix
 % P_buff(:,:,1) = initialize_covariance();
-%% Initialize the truth state vector
+% Initialize the truth state vector
 x_buff(:,1) = initialize_truth_state(simpar);
-%% Initialize the navigation state vector
+% Initialize the navigation state vector
 xhat_buff(:,1) = initialize_nav_state(x_buff(:,1), simpar);
+% Initialize the estimation error
+est_error(:,1) = calcErrors(xhat_buff(:,1), x_buff(:,1), simpar);
 %% Miscellaneous calcs
 % Synthesize continuous sensor data at t_n-1
 
@@ -64,6 +75,9 @@ for i=2:nstep
     %   Perform one step of RK4 integration
     input_nav.simpar = simpar;
     xhat_buff(:,i) = rk4('navState_de', xhat_buff(:,i-1), input_nav, simpar.general.dt);
+    
+    % compute estimation errors
+    est_error(:,i) = calcErrors(xhat_buff(:,i), x_buff(:,i), simpar);
     % Propagate the covariance to t_n
 %     input_cov.ytilde = [];
 %     input_cov.simpar = simpar;
@@ -106,14 +120,14 @@ for i=2:nstep
         input_synthMeas.nu = zeros(length(x_buff(:,1)),1);
         input_synthMeas.simpar = simpar;
         % synthesize measurement        
-        ztilde_tdoa = tdoa.synthesize_measurement(x_buff(:,i), input_synthMeas);
+        ztilde_tdoa(:,k) = tdoa.synthesize_measurement(x_buff(:,i), input_synthMeas);
         % prep the inputs for predicting measurement
         input_predMeas.simpar = simpar;
-        input_predMeas.chaserStates = x_buff(1:7*simpar.general.n_assets,i);
-        ztildehat_tdoa = tdoa.predict_measurement(xhat_buff(:,i), input_predMeas);
+        input_predMeas.chaserStates = x_buff(1:simpar.general.n_chaser*simpar.general.n_assets,i);
+        ztildehat_tdoa(:,k) = tdoa.predict_measurement(xhat_buff(:,i), input_predMeas);
 %         H_tdoa = tdoa.compute_H();
 %         tdoa.validate_linearization();
-        res_tdoa(:,k) = tdoa.compute_residual(ztilde_tdoa, ztildehat_tdoa);
+        res_tdoa(:,k) = tdoa.compute_residual(ztilde_tdoa(:,k), ztildehat_tdoa(:,k));
 %         resCov_tdoa(:,k) = compute_residual_cov();
 %         K_tdoa_buff(:,:,k) = compute_Kalman_gain();
 %         del_x = estimate_error_state_vector();
@@ -141,7 +155,10 @@ traj = struct('navState',xhat_buff,...
     'time_nav',t,...
     'time_kalman',t_kalman,...
     'executionTime',T_execution,...
-    'simpar',simpar);
+    'simpar',simpar,...
+    'ztilde_tdoa',ztilde_tdoa,...
+    'ztildehat_tdoa',ztildehat_tdoa,...
+    'est_error',est_error);
 % traj = struct('navState',xhat_buff,...
 %     'navCov',P_buff,...
 %     'navRes',navRes,...
