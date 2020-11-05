@@ -28,31 +28,39 @@ plot(traj.time_kalman, traj.navRes.tdoa)
 grid on;
 xlabel('time (sec)')
 ylabel('TDOA residual (sec)')
-legend('12','13','23')
+legend( '$\tilde{z}_{12} - \hat{\tilde{z}}_{12}$',...
+        '$\tilde{z}_{13} - \hat{\tilde{z}}_{13}$',...
+        '$\tilde{z}_{23} - \hat{\tilde{z}}_{23}$',...
+        'Interpreter', 'latex')
 
 %% plot actual TDOA measurements
 h_figs(end+1) = figure;
 plot(traj.time_kalman, traj.ztilde_tdoa)
 legend('12','13','23')
 xlabel('time (sec)')
-ylabel('TDOA true (sec)')
+ylabel('$\tilde{z}$ (sec)', 'Interpreter', 'latex')
+legend( '$\tilde{z}_{12}$',...
+        '$\tilde{z}_{13}$',...
+        '$\tilde{z}_{23}$',...
+        'Interpreter', 'latex')
 grid on;
 
 %% plot estimation errors
 h_figs(end+1) = figure;
 plot(traj.time_nav, traj.est_error)
 xlabel('time (sec)')
-title('Estimation Errors Eq. (9)')
+% title('Estimation Errors Eq. (9)')
 grid on;
 legend('bias 1', 'bias 2', 'bias 3',...
     'px target', 'py target', 'pz target',...
     'vx target', 'vy target', 'vz target',...
-    'ax atmo', 'ay atmo', 'az atmo')
+    'ax atmo', 'ay atmo', 'az atmo',...
+    'NumColumns', 4)
     
 
-%%
+% %
 % m2km = 1/1000;
-% %% Plot trajectory
+%% Plot trajectory
 % h_figs(end+1) = figure;
 % htraj = plot3(traj.truthState(simpar.states.ix.pos(1),:)'*m2km,...
 %     traj.truthState(simpar.states.ix.pos(2),:)'*m2km,...
@@ -78,7 +86,7 @@ legend('bias 1', 'bias 2', 'bias 3',...
 %     'FaceColor','k','EdgeAlpha',0.3);
 % legend([htraj, hstart, hstop, hmoon],...
 %     'trajectory','start','stop','moon','Interpreter','latex')
-% %% Plot Altitude vs. time
+%% Plot Altitude vs. time
 % r_mag = sqrt(traj.truthState(simpar.states.ix.pos(1),:).^2 ...
 %     + traj.truthState(simpar.states.ix.pos(2),:).^2 ...
 %     + traj.truthState(simpar.states.ix.pos(3),:).^2)*m2km;
@@ -97,7 +105,7 @@ legend('bias 1', 'bias 2', 'bias 3',...
 % ylabel('rad/s');
 % legend('x_b','y_b','z_b')
 % grid on;
-% %% Plot attitude vs. time
+%% Plot attitude vs. time
 % nsamp = length(traj.time_nav);
 % q_lvlh2b = zeros(4,nsamp);
 % q_lvlh2c = zeros(4,nsamp);
@@ -115,22 +123,22 @@ legend('bias 1', 'bias 2', 'bias 3',...
 % ylabel('$q^{lvlh}_{c}$','Interpreter','latex')
 % legend('q_0','q_i','q_j','q_k')
 % grid on;
-% %% Plot camera angle of incidence
+%% Plot camera angle of incidence
 % h_figs(end+1) = figure;
 % stairs(traj.time_nav, traj.angle_of_incidence_deg);
 % xlabel('time$\left(s\right)$','Interpreter','latex');
 % ylabel('$\gamma\left(deg\right)$','Interpreter','latex');
 % grid on;
-% %% Example residuals
+%% Example residuals
 % h_figs(end+1) = figure;
 % stairs(traj.time_kalman,traj.navRes.example'); hold on
 % xlabel('Time(s)')
 % ylabel('Star Tracker Residuals(rad)')
 % legend('x_{st}','y_{st}','z_{st}')
 % grid on;
-% %% Calculate estimation errors
+%% Calculate estimation errors
 % dele = calcErrors(traj.navState, traj.truthState, simpar);
-% %% Plot position estimation error
+%% Plot position estimation error
 % h_figs(end+1) = figure;
 % stairs(traj.time_nav, dele(simpar.states.ixfe.pos,:)');
 % title('Position Error');
@@ -138,7 +146,7 @@ legend('bias 1', 'bias 2', 'bias 3',...
 % ylabel('m');
 % legend('$x_i$','$y_i$','$z_i$')
 % grid on;
-% %% Plot velocity error
+%% Plot velocity error
 % h_figs(end+1) = figure;
 % stairs(traj.time_nav, dele(simpar.states.ixfe.vel,:)');
 % title('Velocity Error');
@@ -146,5 +154,5 @@ legend('bias 1', 'bias 2', 'bias 3',...
 % ylabel('m/s');
 % legend('x_i','y_i','z_i')
 % grid on;
-%% Add the remaining estimation error plots
+% %% Add the remaining estimation error plots
 end

@@ -47,17 +47,19 @@ if checkProp
     h_figs_prop_check = plotNavPropErrors(traj_propcheck);
     if savefigs
         disp('Saving "CheckProp" plots...')
-        for i = 1:length(h_figs_prop_check)
-            h = h_figs_prop_check(i);
-            ha = gca;
-            filesubstr = matlab.lang.makeValidName(ha.YLabel.String);
-            figfilename = sprintf('checkProp_%d___%s',i,filesubstr);
-            set(h,'renderer','Painters');
-            saveas(h,fullfile(savedir,figfilename),'fig');
-            saveas(h,fullfile(savedir,figfilename),'png');
+%         for i = 1:length(h_figs_prop_check)
+%             h = h_figs_prop_check(i);
+%             ha = gca;
+%             filesubstr = matlab.lang.makeValidName(ha.YLabel.String);
+%             figfilename = sprintf('checkProp_%d___%s',i,filesubstr);
+%             set(h,'renderer','Painters');
+%             saveas(h,fullfile(savedir,figfilename),'fig');
+%             saveas(h,fullfile(savedir,figfilename),'png');
 %             saveas(h,fullfile(savedir,figfilename),'espc');
-        end
-        disp('Plots saved.') 
+%         end
+        save_plots(h_figs_prop_check,'propCheck',savedir);
+        
+%         disp('Plots saved.') 
     end
 end
 %% Run single Monte Carlo

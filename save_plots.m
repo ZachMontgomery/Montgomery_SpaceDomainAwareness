@@ -35,6 +35,8 @@ try
             saveas(h,fullfile(savedir,figfilename),'fig');
         end
         %"Print" a pdf
+%         temp = [savedir(3:end),figfilename,'.pdf']
+%         exportgraphics(h,temp,'ContentType','vector','BackgroundColor','none')
         set(h,'Units','inches');
         screenposition = get(h,'Position');
         set(h,...
