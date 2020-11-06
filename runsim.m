@@ -54,10 +54,13 @@ end
 %Inject errors if the simpar.general.errorPropTestEnable flag is enabled
 if simpar.general.errorPropTestEnable
     fnames = fieldnames(simpar.errorInjection);
-    for i=1:length(fnames)
+    for i=1:simpar.general.n_assets
         delx_buff(i,1) = simpar.errorInjection.(fnames{i});
     end
-    xhat_buff(:,1) = injectErrors(truth2nav(x_buff(:,1)), delx_buff(:,1), simpar);
+    for i=simpar.general.n_assets+1:simpar.general.n_assets+9
+        delx_buff(i,1) = simpar.errorInjection.(fnames{i});
+    end
+    xhat_buff(:,1) = injectErrors(truth2nav(x_buff(:,1),simpar), delx_buff(:,1), simpar);
 end
 %% Loop over each time step in the simulation
 for i=2:nstep
@@ -86,8 +89,8 @@ for i=2:nstep
     % Propagate the error state from tn-1 to tn if errorPropTestEnable == 1
     if simpar.general.errorPropTestEnable
         input_delx.xhat = xhat_buff(:,i-1);
-        input_delx.ytilde = [];
         input_delx.simpar = simpar;
+        input_delx.w = zeros(simpar.general.n_design,1);
         delx_buff(:,i) = rk4('errorState_de', delx_buff(:,i-1), ...
             input_delx, simpar.general.dt);
     end
