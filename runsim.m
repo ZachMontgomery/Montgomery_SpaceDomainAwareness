@@ -53,12 +53,16 @@ if simpar.general.checkErrDefConstEnable
 end
 %Inject errors if the simpar.general.errorPropTestEnable flag is enabled
 if simpar.general.errorPropTestEnable
-    fnames = fieldnames(simpar.errorInjection);
+%     fnames = fieldnames(simpar.errorInjection);
     for i=1:simpar.general.n_assets
-        delx_buff(i,1) = simpar.errorInjection.(fnames{i});
+        delx_buff(i,1) = simpar.errorInjection.(['b',int2str(i)]);  %(fnames{i});
     end
-    for i=simpar.general.n_assets+1:simpar.general.n_assets+9
-        delx_buff(i,1) = simpar.errorInjection.(fnames{i});
+    axis = {'x','y','z'};
+    Na = simpar.general.n_assets;
+    for i=1:3
+        delx_buff(Na+i,1) = simpar.errorInjection.(['pt',axis{i}]);
+        delx_buff(Na+3+i,1) = simpar.errorInjection.(['vt',axis{i}]);
+        delx_buff(Na+6+i,1) = simpar.errorInjection.(['a',axis{i}]);
     end
     xhat_buff(:,1) = injectErrors(truth2nav(x_buff(:,1),simpar), delx_buff(:,1), simpar);
 end
