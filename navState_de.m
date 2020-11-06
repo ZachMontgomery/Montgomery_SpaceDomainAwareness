@@ -24,7 +24,7 @@ xhatdot = zeros(simpar.general.n_design,1);
 % loop thru assets
 for i=1:Na
     % bias dot of asset $i$
-    xhatdot(i) = -xhat(i) / tau;                                            % Eq 18
+    xhatdot(i) = -xhat(i) / simpar.Constants.tauBias;                                            % Eq 18
 end
 % position dot of target equals velocity of target
 xhatdot(Na+1:Na+3) = xhat(Na+4:Na+6);                                       % Eq 19
@@ -32,6 +32,6 @@ xhatdot(Na+1:Na+3) = xhat(Na+4:Na+6);                                       % Eq
 xhatdot(Na+4:Na+6) = -simpar.Constants.muEarth ...
     / norm(xhat(Na+1:Na+3))^3 * xhat(Na+1:Na+3) + xhat(Na+7:Na+9);          % Eq 20
 % a_atmo dot
-tau = 500;  % set tau for a_atmo to 500 seconds
-xhatdot(Na+7:Na+9) = -xhat(Na+7:Na+9)/tau;                                  % Eq 21
+% tau = 500;  % set tau for a_atmo to 500 seconds
+xhatdot(Na+7:Na+9) = -xhat(Na+7:Na+9)/simpar.Constants.tauAtmo;                                  % Eq 21
 end
