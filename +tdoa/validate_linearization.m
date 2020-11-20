@@ -26,13 +26,12 @@ input_predMeas.simpar = simpar;
 input_predMeas.chaserStates = x(1:simpar.general.n_chaser*Na);
 ztildehat_nl = tdoa.predict_measurement(xhat, input_predMeas);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% calculate predicted measurement linear
+% calculate H matrix
 H = tdoa.compute_H(xhat, input_predMeas);
-ztildehat_l = H * delx;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % compute nonlinear and linear residuals and their difference
 residual_nl = ztilde - ztildehat_nl;
-residual_l  = ztilde - ztildehat_l;
+residual_l  = H * delx;
 difference = residual_nl - residual_l;
 results = table(residual_nl, residual_l, difference);
 disp(results)
