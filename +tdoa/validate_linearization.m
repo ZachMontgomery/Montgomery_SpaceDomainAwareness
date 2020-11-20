@@ -1,22 +1,39 @@
-function [ output_args ] = validate_linearization_example( input_args )
-%validate_linearization_example validates the calculation of the
-%measurement sensitivity matrix
-%
-% Inputs:
-%   Input1 = description (units)
-%   Input2 = description (units)
-%
-% Outputs
-%   Output1 = description (units)
-%   Output2 = description (units)
-%
-% Example Usage
-% [ output_args ] = validate_linearization_example( input_args )
-%
-% See also FUNC1, FUNC2
-
-% Author: Randy Christensen
-% Date: 31-Aug-2020 16:01:19
-% Reference: 
-% Copyright 2020 Utah State University
+function validate_linearization( input )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% unpack inputs
+simpar = input.simpar;
+x = input.x;
+ztilde = input.ztilde;
+Na = simpar.general.n_assets;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% create error vector
+delx = zeros(simpar.general.n_design,1);
+for i=1:Na
+    delx(i) = simpar.errorInjection.(['b',int2str(i)]);
+end
+axis = {'x','y','z'};
+for i=1:3
+    delx(Na+i) = simpar.errorInjection.(['pt',axis{i}]);
+    delx(Na+3+i) = simpar.errorInjection.(['vt',axis{i}]);
+    delx(Na+6+i) = simpar.errorInjection.(['a',axis{i}]);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% inject errors to create xhat
+xhat = injectErrors(truth2nav(x,simpar), delx, simpar);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% calculate predicted measurement nonlinear
+input_predMeas.simpar = simpar;
+input_predMeas.chaserStates = x(1:simpar.general.n_chaser*Na);
+ztildehat_nl = tdoa.predict_measurement(xhat, input_predMeas);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% calculate predicted measurement linear
+H = tdoa.compute_H(xhat, input_predMeas);
+ztildehat_l = H * delx;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% compute nonlinear and linear residuals and their difference
+residual_nl = ztilde - ztildehat_nl;
+residual_l  = ztilde - ztildehat_l;
+difference = residual_nl - residual_l;
+results = table(residual_nl, residual_l, difference);
+disp(results)
 end
