@@ -1,30 +1,10 @@
-function [ xhat ] = initialize_nav_state( x, simparams)
+function [ xhat ] = initialize_nav_state( x, simpar)
 %initialize_nav_state initializes the navigation state vector consistent
 %with the initial covariance matrix
-%
-% Inputs:
-%   Input1 = description (units)
-%   Input2 = description (units)
-%
-% Outputs
-%   Output1 = description (units)
-%   Output2 = description (units)
-%
-% Example Usage
-% [ output_args ] = initialize_nav_state( input_args )
-
-% Author: 
-% Date: 31-Aug-2020 15:46:59
-% Reference: 
-% Copyright 2020 Utah State University
 
 % Consistent with the truth state initialization, you should randomize the
 % vehicle states, and initialize any sensor parameters to zero.  An example
 % of these calculations are shown below.
-
-
-
-
 
 % [L_posvelatt,p] = chol(P(simpar.states.ixfe.vehicle,...
 %     simpar.states.ixfe.vehicle,1),'lower');
@@ -36,7 +16,30 @@ function [ xhat ] = initialize_nav_state( x, simparams)
 % xhat(simpar.states.ixf.parameter,1) = 0;
 
 
-xhat = truth2nav(x, simparams);
+Na = simpar.general.n_assets;
+
+% initialize error vector to zeros
+delx = zeros(simpar.general.n_design,1);
+
+% biases were randomized in the truth state, so they need to be left to
+% zero here
+
+% loop thru axis
+axis = {'x', 'y', 'z'};
+for i=1:3
+    % set position error
+    delx(Na+i)   = simpar.nav.ic.(['sig_p',axis{i}]) * randn;
+    % set velocity error
+    delx(Na+3+i) = simpar.nav.ic.(['sig_v',axis{i}]) * randn;
+    % atmo accelerations errors were set in the truth state
+end
+
+% inject the errors to create xhat
+xhat = injectErrors(truth2nav(x, simpar), delx, simpar);
+
+
+
+% xhat = truth2nav(x, simparams);
 
 
 end

@@ -16,6 +16,8 @@ for i=1:Na-1
     Ntdoa = Ntdoa + i;
 end
 
+axis = {'x','y','z'};
+
 %% Pre-allocate buffers for saving data
 % Truth, navigation, and error state buffers
 x_buff          = zeros(simpar.states.nx,nstep);
@@ -24,7 +26,7 @@ delx_buff       = zeros(simpar.states.nxfe,nstep);
 est_error       = zeros(simpar.states.nxf,nstep);
 
 % Navigation covariance buffer
-% P_buff       = zeros(simpar.states.nxfe,simpar.states.nxfe,nstep);
+P_buff          = zeros(simpar.states.nxfe,simpar.states.nxfe,nstep);
 
 % Continuous measurement buffer
 % ytilde_buff     = zeros(simpar.general.n_inertialMeas,nstep);
@@ -41,7 +43,7 @@ ztildehat_tdoa = zeros(Ntdoa,nstep_aid);
 %% Initialize Vectors and matrices
 
 % % Initialize the navigation covariance matrix
-% P_buff(:,:,1) = initialize_covariance();
+P_buff(:,:,1) = initialize_covariance(simpar);
 
 % Initialize the truth state vector
 x_buff(:,1) = initialize_truth_state(simpar);
@@ -71,7 +73,6 @@ if simpar.general.errorPropTestEnable
     for i=1:Na
         delx_buff(i,1) = simpar.errorInjection.(['b',int2str(i)]);
     end
-    axis = {'x','y','z'};
     for i=1:3
         delx_buff(Na+i,1) = simpar.errorInjection.(['pt',axis{i}]);
         delx_buff(Na+3+i,1) = simpar.errorInjection.(['vt',axis{i}]);
@@ -80,14 +81,30 @@ if simpar.general.errorPropTestEnable
     xhat_buff(:,1) = injectErrors(truth2nav(x_buff(:,1),simpar), ...
         delx_buff(:,1), simpar);
 end
+
+%% Compute the constant process noise PSD's
+
+% clocking bias
+Q_b = zeros(Na,1);
+for i=1:Na
+    Q_b(i) = 2 * simpar.truth.params.(['sig_b',int2str(i),'_ss'])^2 / simpar.Constants.tauBias;
+end
+
+% atmo accelerations
+Q_a = zeros(3,1);
+for i=1:3
+    Q_a(i) = 2 * simpar.truth.params.(['sig_a',axis{i},'_ss'])^2 / simpar.Constants.tauAtmo;
+end
+
+Q = [Q_b', Q_a']'
 %% Loop over each time step in the simulation
 for i=2:nstep
     % Propagate truth states to t_n
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %   Realize a sample of process noise (don't forget to scale Q by 1/dt!)
-    w = zeros(length(x_buff(:,1)),1);
     %   Define any inputs to the truth state DE
-    input_truth.w = w;
+    input_truth.w_b = sqrt(diag(Q_b)/simpar.general.dt)*randn(Na,1);
+    
     input_truth.simpar = simpar;
     %   Perform one step of RK4 integration
     x_buff(:,i) = rk4('truthState_de', x_buff(:,i-1), input_truth, ...
@@ -114,8 +131,8 @@ for i=2:nstep
     % input_cov.ytilde = [];
     % input_cov.simpar = simpar;
     %   Perform one step of RK4 integration
-    % P_buff(:,:,i) = rk4('navCov_de', P_buff(:,:,i-1), input_cov, ...
-    %         simpar.general.dt);
+    P_buff(:,:,i) = rk4('navCov_de', P_buff(:,:,i-1), input_cov, ...
+            simpar.general.dt);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Propagate the error state from tn-1 to tn if errorPropTestEnable == 1
