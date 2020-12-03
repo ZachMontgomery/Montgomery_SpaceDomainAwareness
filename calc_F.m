@@ -1,24 +1,22 @@
-function [ Fhat ] = calc_F( xhat, ytilde, simpar )
+function [ F ] = calc_F( xhat, simpar )
 %calc_F computes the dynamics coupling matrix
-%
-% Inputs:
-%   xhat = state vector
-%   ytilde = continuous measurements
-%   simpar = simulation parameters
-%
-% Outputs
-%   Fhat = state dynamics matrix
-%
-% Example Usage
-% [ Fhat ] = calc_F( xhat, ytilde, simpar )
-
-% Author: Randy Christensen
-% Date: 13-May-2020
-% Reference: None
-% Copyright 2020 Utah State University
 
 %% Unpack the inputs
 
-%% Compute Fhat
-Fhat = [];
+Na = simpar.general.n_assets;
+mu = simpar.Constants.muEarth;
+
+TauBias = -1/simpar.Constants.tauBias * eye(Na);
+TauAtmo = -1/simpar.Constants.tauAtmo * eye(3);
+
+phat = xhat(Na+1:Na+3);
+phatMag = norm(phat);
+
+g = mu / phatMag^5 * (3 * diag(phat)^2 - phatMag^2 * eye(3));
+
+F = [TauBias, zeros(Na,9);
+     zeros(3,Na+3), eye(3), zeros(3,3);
+     zeros(3,Na), g, zeros(3,3), eye(3);
+     zeros(3,Na+6), TauAtmo];
+
 end

@@ -23,9 +23,9 @@ savefile.filename = filename;
 %% Read in the simulation parameters
 %Define the simparams
 checkProp = 0;
-runSingleMonteCarlo = 1;
-runMonteCarlo = 0;
-savefigs = 0;
+runSingleMonteCarlo = 0;
+runMonteCarlo = 1;
+savefigs = 1;
 [ simpar, ~ ] = createSimParams( paramfile );
 %% Ensure certain flags are not enabled for certain runs
 if simpar.general.measLinerizationCheckEnable
@@ -95,11 +95,15 @@ if runMonteCarlo
         simpar.general.n_MonteCarloRuns);
     % Run Monte Carlo simulation
     tic_mc = tic;
+%     cnt = zeros(simpar.general.n_MonteCarloRuns,1);
     parfor i=1:simpar.general.n_MonteCarloRuns
         traj(i) = runsim(simpar, 0, i);
         errors(:,:,i) = calcErrors( traj(i).navState, ...
             traj(i).truthState, simpar );
+%         cnt(i) = 1;
         fprintf('%d/%d complete\n',i, simpar.general.n_MonteCarloRuns);
+%         fprintf('Run %d complete. Total Monte-Carlo %f\% complete\n',i,...
+%             sum(cnt)/simpar.general.n_MonteCarloRuns*100);
     end
     dt_mc = toc(tic_mc);
     % Create Monte Carlo plots
@@ -112,15 +116,16 @@ if runMonteCarlo
     hfigs = plotMonteCarlo(errors, traj_ref, traj, simpar);
     if savefigs
         disp('Saving Monte Carlo plots...')
-        for i = 1:length(hfigs)
-            h = hfigs(i);
-            filesubstr = matlab.lang.makeValidName(get(h,'Name'));
-            figfilename = sprintf('monteCarlo_%d__%s',i,filesubstr);
-            saveas(h,fullfile(savedir,figfilename),'fig');
-            saveas(h,fullfile(savedir,figfilename),'png');
-            saveas(h,fullfile(savedir,figfilename),'espc');
-        end
-        disp('Plots saved.')
+%         for i = 1:length(hfigs)
+%             h = hfigs(i);
+%             filesubstr = matlab.lang.makeValidName(get(h,'Name'));
+%             figfilename = sprintf('monteCarlo_%d__%s',i,filesubstr);
+%             saveas(h,fullfile(savedir,figfilename),'fig');
+%             saveas(h,fullfile(savedir,figfilename),'png');
+%             saveas(h,fullfile(savedir,figfilename),'espc');
+%         end
+%         disp('Plots saved.')
+        save_plots(hfigs,'MonteCarlo',savedir);
     end
     fprintf('MC_time = %g\n',dt_ref + dt_mc);
 end

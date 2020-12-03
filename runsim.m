@@ -83,28 +83,15 @@ if simpar.general.errorPropTestEnable
 end
 
 %% Compute the constant process noise PSD's
+Q = calc_Q( simpar );
 
-% clocking bias
-Q_b = zeros(Na,1);
-for i=1:Na
-    Q_b(i) = 2 * simpar.truth.params.(['sig_b',int2str(i),'_ss'])^2 / simpar.Constants.tauBias;
-end
-
-% atmo accelerations
-Q_a = zeros(3,1);
-for i=1:3
-    Q_a(i) = 2 * simpar.truth.params.(['sig_a',axis{i},'_ss'])^2 / simpar.Constants.tauAtmo;
-end
-
-Q = [Q_b', Q_a']'
 %% Loop over each time step in the simulation
 for i=2:nstep
     % Propagate truth states to t_n
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %   Realize a sample of process noise (don't forget to scale Q by 1/dt!)
     %   Define any inputs to the truth state DE
-    input_truth.w_b = sqrt(diag(Q_b)/simpar.general.dt)*randn(Na,1);
-    
+    input_truth.w = sqrt(Q / simpar.general.dt) * randn(Na+6,1);  
     input_truth.simpar = simpar;
     %   Perform one step of RK4 integration
     x_buff(:,i) = rk4('truthState_de', x_buff(:,i-1), input_truth, ...
@@ -128,8 +115,8 @@ for i=2:nstep
     % Propagate the covariance to t_n
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %   Assign inputs to the navigation covariance DE
-    % input_cov.ytilde = [];
-    % input_cov.simpar = simpar;
+    input_cov.simpar = simpar;
+    input_cov.xhat = xhat_buff(:,i-1);
     %   Perform one step of RK4 integration
     P_buff(:,:,i) = rk4('navCov_de', P_buff(:,:,i-1), input_cov, ...
             simpar.general.dt);
@@ -186,17 +173,18 @@ for i=2:nstep
         ztildehat_tdoa(:,k) = tdoa.predict_measurement(xhat_buff(:,i), ...
             input_predMeas);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if simpar.general.measLinerizationCheckEnable
+            H_tdoa = tdoa.compute_H( xhat_buff(:,i), input_predMeas );
+
+            input_validateHlinearization.simpar = simpar;
+            input_validateHlinearization.x = x_buff(:,i);
+            input_validateHlinearization.ztilde = ztilde_tdoa(:,k);
+
+            tdoa.validate_linearization(input_validateHlinearization);
         
-        H_tdoa = tdoa.compute_H( xhat_buff(:,i), input_predMeas );
-        
-        input_validateHlinearization.simpar = simpar;
-        input_validateHlinearization.x = x_buff(:,i);
-        input_validateHlinearization.ztilde = ztilde_tdoa(:,k);
-        
-        tdoa.validate_linearization(input_validateHlinearization);
-        
-        res_tdoa(:,k) = tdoa.compute_residual(ztilde_tdoa(:,k), ...
-            ztildehat_tdoa(:,k));
+            res_tdoa(:,k) = tdoa.compute_residual(ztilde_tdoa(:,k), ...
+                ztildehat_tdoa(:,k));
+        end
         % resCov_tdoa(:,k) = compute_residual_cov();
         % K_tdoa_buff(:,:,k) = compute_Kalman_gain();
         % del_x = estimate_error_state_vector();
@@ -214,12 +202,12 @@ end
 
 T_execution = toc;
 %Package up residuals
-navRes.tdoa = res_tdoa;
+% navRes.tdoa = res_tdoa;
 % navResCov.tdoa = resCov_tdoa;
 % kalmanGains.tdoa = K_tdoa_buff;
 %Package up outputs
 traj = struct('navState',xhat_buff,...
-    'navRes',navRes,...
+    'navCov',P_buff,...
     'truthState',x_buff,...
     'time_nav',t,...
     'time_kalman',t_kalman,...
@@ -228,6 +216,7 @@ traj = struct('navState',xhat_buff,...
     'ztilde_tdoa',ztilde_tdoa,...
     'ztildehat_tdoa',ztildehat_tdoa,...
     'est_error',est_error);
+%     'navRes',navRes,...
 % traj = struct('navState',xhat_buff,...
 %     'navCov',P_buff,...
 %     'navRes',navRes,...
