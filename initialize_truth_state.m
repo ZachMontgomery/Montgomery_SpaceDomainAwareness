@@ -36,7 +36,6 @@ for j=1:3
     % set velocity initial condition for target at the jth axis
     x(i+3+j) = simpar.general.ic.(['vt',axis{j}]);
     % set atmo accel initial condition at the jth axis
-    % x(i+6+j) = simpar.general.ic.(['a',axis{j}]);
     x(i+6+j) = simpar.truth.ic.(['sig_a',axis{j}]) * randn;
 end
 

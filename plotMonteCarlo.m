@@ -7,80 +7,63 @@ hfigs = [];
 
 %% Unpack values
 Na = simpar.general.n_assets;
+Nc = simpar.general.n_chaser;
 
 %% Plot estimation errors
-% for i=1:Na
-%     hfigs(end+1) = figure('Name', sprintf('est_err_%d', i ));
-%     hold on;
-%     grid on;
-%     ensemble = squeeze(errors(i,:,:));
-%     filter_cov = squeeze(traj_ref.navCov(i,i,:));
-%     h_hair = stairs(traj_ref.time_nav, ensemble, 'Color', [0.7,0.7,0.7]);
-%     h_filter_cov = stairs(traj_ref.time_nav, ...
-%         [3*sqrt(filter_cov) -3*sqrt(filter_cov)], '--r');
-%     legend([h_hair(1), h_filter_cov(1)], 'MC run', 'EKF cov')
-%     xlabel('time(s)')
-%     ylabel(['Asset ',int2str(i), ' clocking bias (sec)'])
-% end
 
-axis = {'x', 'y', 'z'};
+axisName = {'x', 'y', 'z'};
 ylabels = {};
 for i=1:Na
     ylabels{i} = ['Asset ',int2str(i), ' clocking bias (sec)'];
 end
 for i=1:3
-    ylabels{Na+i}   = ['RSO target ',axis{i},' position (m)'];
-    ylabels{Na+3+i} = ['RSO target ',axis{i},' velocity (m/s)'];
-    ylabels{Na+6+i} = ['Atmospheric ',axis{i},' acceleration (m/s^2)'];
+    ylabels{Na+i}   = ['RSO target ',axisName{i},' position (m)'];
+    ylabels{Na+3+i} = ['RSO target ',axisName{i},' velocity (m/s)'];
+    ylabels{Na+6+i} = ['Atmospheric ',axisName{i},' acceleration (m/s^2)'];
 end
 for i=1:n
-    
     hfigs(end + 1) = figure('Name',sprintf('est_err_%d',i)); %#ok<*AGROW>
     hold on;
     grid on;
     ensemble = squeeze(errors(i,:,:));
     filter_cov = squeeze(traj_ref.navCov(i,i,:));
-    h_hair = stairs(traj_ref.time_nav, ensemble,'Color',[0.8 0.8 0.8]);
+    h_hair = stairs(traj_ref.time_nav, ensemble,'Color',[0.5 0.5 0.5]);
     h_filter_cov = stairs(traj_ref.time_nav, ...
         [3*sqrt(filter_cov) -3*sqrt(filter_cov)],'--r');
     legend([h_hair(1), h_filter_cov(1)],'MC run','EKF cov')
     xlabel('time(s)')
     ylabel(ylabels{i})
 end
-% %% Create estimation error plots in LVLH frame
-% nsamp = length(traj_ref.time_nav);
-% %Transform
-% P_lvlh = zeros(simpar.states.nxfe, simpar.states.nxfe, nsamp);
-% errors_lvlh = zeros(simpar.states.nxfe,nsamp,...
-%     simpar.general.n_MonteCarloRuns);
-% for i=1:nsamp
-%     r_i = traj_ref.truthState(simpar.states.ix.pos,i);
-%     v_i = traj_ref.truthState(simpar.states.ix.vel,i);
-%     T_i2lvlh = inertial2lvlh(r_i, v_i);
-%     A = blkdiag(T_i2lvlh, T_i2lvlh, ...
-%         eye(simpar.states.nxfe-6, simpar.states.nxfe-6));
-%     P_lvlh(:,:,i) = A*traj_ref.navCov(:,:,i)*A';
-%     for j=1:simpar.general.n_MonteCarloRuns
-%         errors_lvlh(:,i,j) = A*errors(:,i,j);
-%     end
-% end
-% ylabels = {'$X_{LVLH}$ Position Error $(m)$',...
-%     '$Y_{LVLH}$ Position Error $(m)$',...
-%     '$Z_{LVLH}$ Position Error $(m)$',...
-%     '$X_{LVLH}$ Velocity Error $(m/s)$',...
-%     '$Y_{LVLH}$ Velocity Error $(m/s)$',...
-%     '$Z_{LVLH}$ Velocity Error $(m/s)$'};
-% for i=1:6
-%     hfigs(end+1) = figure('Name',sprintf('est_err_lvlh_%d',i)); %#ok<*AGROW>
-%     hold on;
-%     grid on;
-%     ensemble = squeeze(errors_lvlh(i,:,:));
-%     filter_cov = squeeze(P_lvlh(i,i,:));
-%     h_hair = stairs(traj_ref.time_nav, ensemble,'Color',[0.8 0.8 0.8]);
-%     h_filter_cov = stairs(traj_ref.time_nav, ...
-%         [3*sqrt(filter_cov) -3*sqrt(filter_cov)],'--r');
-%     legend([h_hair(1), h_filter_cov(1)],'MC run','EKF cov')
-%     xlabel('time$\left(s\right)$','Interpreter','latex');
-%     ylabel(ylabels{i},'Interpreter','latex');
-% end
+
+%% Plot Trajectories
+hfigs(end + 1) = figure('Name',sprintf('Reference Trajectory'));
+% target orbit line
+I = Nc * Na + Na;
+lines = [];
+lines(1) = plot3(traj_ref.truthState(I+1,:),...
+      traj_ref.truthState(I+2,:),...
+      traj_ref.truthState(I+3,:),'b');
+hold on;
+grid on;
+% asset orbit lines
+colorz = {'r','y','m'};
+for i=1:Na
+    I = (i-1)*Nc;
+    lines(1+i) = plot3(traj_ref.truthState(I+1,:),...
+          traj_ref.truthState(I+2,:),...
+          traj_ref.truthState(I+3,:),colorz{i});
+end
+% plot starting locations
+plot3(traj_ref.truthState(I+1,1),...
+      traj_ref.truthState(I+2,1),...
+      traj_ref.truthState(I+3,1),'bo')
+for i=1:Na
+    I = (i-1)*Nc;
+    plot3(traj_ref.truthState(I+1,1),...
+          traj_ref.truthState(I+2,1),...
+          traj_ref.truthState(I+3,1),[colorz{i},'o'])
+end
+legend(lines,'Target', 'Asset 1', 'Asset 2', 'Asset 3')
+axis equal
+
 end

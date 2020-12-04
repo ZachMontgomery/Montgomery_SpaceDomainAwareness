@@ -93,6 +93,10 @@ for i=2:nstep
     %   Define any inputs to the truth state DE
     input_truth.w = sqrt(Q / simpar.general.dt) * randn(Na+6,1);  
     input_truth.simpar = simpar;
+    
+    % debugging by turning of some error sources
+%     input_truth.w(:) = 0;
+    
     %   Perform one step of RK4 integration
     x_buff(:,i) = rk4('truthState_de', x_buff(:,i-1), input_truth, ...
         simpar.general.dt);

@@ -125,7 +125,7 @@ if runMonteCarlo
 %             saveas(h,fullfile(savedir,figfilename),'espc');
 %         end
 %         disp('Plots saved.')
-        save_plots(hfigs,'MonteCarlo',savedir);
+        save_plots(hfigs,'CovarProp',savedir);
     end
     fprintf('MC_time = %g\n',dt_ref + dt_mc);
 end

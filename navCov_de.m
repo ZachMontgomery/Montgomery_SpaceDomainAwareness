@@ -1,4 +1,4 @@
-function [ P_dot ] = navCov_de( P, input )
+function P_dot = navCov_de( P, input )
 
 %Unpack the inputs for clarity
 xhat = input.xhat;
