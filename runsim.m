@@ -182,7 +182,7 @@ for i=2:nstep
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % compute H matrix
         H_tdoa = tdoa.compute_H( xhat_buff(:,i), input_predMeas );
-%         check for measurement linearization Check
+        % check for measurement linearization Check
         if simpar.general.measLinerizationCheckEnable
             % prep inputs for measurement linearization check
             input_validateHlinearization.simpar = simpar;

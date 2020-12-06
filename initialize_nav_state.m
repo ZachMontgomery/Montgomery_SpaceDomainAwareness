@@ -37,6 +37,11 @@ end
 % inject the errors to create xhat
 xhat = injectErrors(truth2nav(x, simpar), delx, simpar);
 
+% since the biases and atmo accelerations were set in the truth state, the
+% xhat must be set to zero for these states, otherwise these states always
+% start with 0 estimated error
+xhat(1:Na) = 0.;
+xhat(Na+6+1:end) = 0.;
 
 
 % xhat = truth2nav(x, simparams);
