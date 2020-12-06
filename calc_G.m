@@ -1,23 +1,20 @@
-function [ G ] = calc_G( ~, simpar )
+function G = calc_G( simpar )
 %calc_G Calculates the process noise dynamic coupling matrix
-%
-% Inputs:
-%   xhat = state vector
-%   simpar= simulation parameters
-%
-% Outputs
-%   G = process noise dynamic coupling matrix
-%
-% Example Usage
-% [ G ] = calc_G( xhat, simpar )
-
-% Author: Randy Christensen
-% Date: 13-May-2020
-% Reference: None
-% Copyright 2020 Utah State University
-
 %% Unpack the inputs
+Na = simpar.general.n_assets;
+Ntdoa = 0;
+for i=1:Na-1
+    Ntdoa = Ntdoa + i;
+end
 
 %% Compute G
-G = [];
+G = zeros(Ntdoa,Na);
+cnt = 0;
+for i=1:Na-1
+    for j=i+1:Na
+        cnt = cnt + 1;
+        G(cnt,i) = 1;
+        G(cnt,j) = -1;
+    end
+end
 end

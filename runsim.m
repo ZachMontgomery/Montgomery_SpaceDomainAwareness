@@ -15,6 +15,7 @@ Ntdoa = 0;
 for i=1:Na-1
     Ntdoa = Ntdoa + i;
 end
+Nd = simpar.general.n_design;
 
 axis = {'x','y','z'};
 
@@ -35,10 +36,10 @@ P_buff          = zeros(simpar.states.nxfe,simpar.states.nxfe,nstep);
 res_tdoa        = zeros(Ntdoa,nstep_aid);
 
 % TDOA measurement buffers
-ztilde_tdoa    = zeros(Ntdoa,nstep_aid);
-ztildehat_tdoa = zeros(Ntdoa,nstep_aid);
-% resCov_tdoa       = zeros(3,3,nstep_aid);
-% K_tdoa_buff       = zeros(simpar.states.nxfe,3,nstep_aid);
+ztilde_tdoa     = zeros(Ntdoa,nstep_aid);
+ztildehat_tdoa  = zeros(Ntdoa,nstep_aid);
+resCov_tdoa     = zeros(Ntdoa,Ntdoa,nstep_aid);
+K_tdoa_buff     = zeros(Nd,Ntdoa,nstep_aid);
 
 %% Initialize Vectors and matrices
 
@@ -84,7 +85,9 @@ end
 
 %% Compute the constant process noise PSD's
 Q = calc_Q( simpar );
-
+%% Compute the constant measurement noise matrix R
+R = eye(Na) * (2.e-8 - simpar.truth.params.sig_b1_ss);
+G = calc_G( simpar );
 %% Loop over each time step in the simulation
 for i=2:nstep
     % Propagate truth states to t_n
@@ -95,7 +98,7 @@ for i=2:nstep
     input_truth.simpar = simpar;
     
     % debugging by turning of some error sources
-%     input_truth.w(:) = 0;
+    % input_truth.w(:) = 0;
     
     %   Perform one step of RK4 integration
     x_buff(:,i) = rk4('truthState_de', x_buff(:,i-1), input_truth, ...
@@ -165,7 +168,7 @@ for i=2:nstep
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % prep the inputs for measurement synthesation
-        input_synthMeas.nu = zeros(length(x_buff(:,1)),1);
+        input_synthMeas.nu = R * randn(Na,1);
         input_synthMeas.simpar = simpar;
         % synthesize measurement        
         ztilde_tdoa(:,k) = tdoa.synthesize_measurement(x_buff(:,i), ...
@@ -177,23 +180,26 @@ for i=2:nstep
         ztildehat_tdoa(:,k) = tdoa.predict_measurement(xhat_buff(:,i), ...
             input_predMeas);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % compute H matrix
+        H_tdoa = tdoa.compute_H( xhat_buff(:,i), input_predMeas );
+%         check for measurement linearization Check
         if simpar.general.measLinerizationCheckEnable
-            H_tdoa = tdoa.compute_H( xhat_buff(:,i), input_predMeas );
-
+            % prep inputs for measurement linearization check
             input_validateHlinearization.simpar = simpar;
             input_validateHlinearization.x = x_buff(:,i);
             input_validateHlinearization.ztilde = ztilde_tdoa(:,k);
-
+            % validate measurement linearization
             tdoa.validate_linearization(input_validateHlinearization);
-        
+            % compute measurement residual
             res_tdoa(:,k) = tdoa.compute_residual(ztilde_tdoa(:,k), ...
                 ztildehat_tdoa(:,k));
         end
-        % resCov_tdoa(:,k) = compute_residual_cov();
-        % K_tdoa_buff(:,:,k) = compute_Kalman_gain();
-        % del_x = estimate_error_state_vector();
-        % P_buff(:,:,k) = update_covariance();
-        % xhat_buff(:,i) = correctErrors();
+        resCov_tdoa(:,:,k) = compute_residual_cov(H_tdoa,P_buff(:,:,i),G,R);
+        K_tdoa_buff(:,:,k) = compute_Kalman_gain(P_buff(:,:,i),H_tdoa,resCov_tdoa(:,:,k));
+        del_x = estimate_error_state_vector(K_tdoa_buff(:,:,k),...
+            tdoa.compute_residual(ztilde_tdoa(:,k), ztildehat_tdoa(:,k)));
+        P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, P_buff(:,:,i), G, R, simpar);
+        xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
     end
     if verbose && mod(i,100) == 0
         fprintf('%0.1f%% complete\n',100 * i/nstep);
