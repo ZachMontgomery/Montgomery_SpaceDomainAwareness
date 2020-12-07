@@ -15,6 +15,7 @@ Ntdoa = 0;
 for i=1:Na-1
     Ntdoa = Ntdoa + i;
 end
+Ntdoa = Na - 1;
 Nd = simpar.general.n_design;
 
 axis = {'x','y','z'};

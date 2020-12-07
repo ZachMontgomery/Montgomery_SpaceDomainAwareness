@@ -30,28 +30,31 @@ N_tdoa = 0;
 for ii=1:Na-1
     N_tdoa = N_tdoa + ii;
 end
+N_tdoa = Na - 1;
 % initialize the true distance difference vector
 del_r_true = zeros(N_tdoa,1);
 % loop thru the tdoa measurement indexes (i,j) and compute the true
 % distance difference vector
 cnt = 0;
-for i=1:Na-1
+% for i=1:Na-1
+    i = 1;
     for j=i+1:Na
         cnt = cnt + 1;
         del_r_true(cnt) = norm( ptarget - p(:,i) ) - norm( ptarget - p(:,j) );  % part of Eq 26
     end
-end
+% end
 % compute the true tdoa measurement
 del_tdoa_true = del_r_true / simpar.Constants.c;                % remianing part of Eq 26
 % initialize the actual tdoa measurement
 del_tdoa = zeros(N_tdoa,1);
-% loope thru the tdoa measurement indexed (i,j) and compute the actual tdoa
+% loop thru the tdoa measurement indexed (i,j) and compute the actual tdoa
 % measurements
 cnt = 0;
-for i=1:Na-1
+% for i=1:Na-1
+    i = 1;
     for j=i+1:Na
         cnt = cnt + 1;
         del_tdoa(cnt) = del_tdoa_true(cnt) + nu(i) - nu(j) + b(i) - b(j);   % Eq 25
     end
-end
+% end
 end
