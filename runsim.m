@@ -87,7 +87,7 @@ end
 %% Compute the constant process noise PSD's
 Q = calc_Q( simpar );
 %% Compute the constant measurement noise matrix R
-R = eye(Na) * (2.e-8 - simpar.truth.params.sig_b1_ss);
+R = eye(Na) * (2.e-8 - simpar.truth.params.sig_b1_ss)^2;
 G = calc_G( simpar );
 %% Loop over each time step in the simulation
 for i=2:nstep

@@ -24,8 +24,8 @@ savefile.filename = filename;
 %% Read in the simulation parameters
 %Define the simparams
 checkProp = 0;
-runSingleMonteCarlo = 1;
-runMonteCarlo = 0;
+runSingleMonteCarlo = 0;
+runMonteCarlo = 1;
 savefigs = 0;
 [ simpar, ~ ] = createSimParams( paramfile );
 %% Ensure certain flags are not enabled for certain runs
