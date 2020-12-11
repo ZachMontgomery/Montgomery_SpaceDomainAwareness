@@ -11,24 +11,15 @@ temp = eye(Nd) - K * H;
 Pp = temp*Pa*temp' + K*G*R*G'*K';
 
 if ~issymmetric(Pp)
-    disp('updated covariance is not symmetric');
+%     disp('updated covariance is not symmetric');
 %     pause
-    for i=1:Nd-1
-        for j=i+1:Nd
-            if i==j
-                continue
-            end
-            temp = (Pp(i,j) + Pp(j,i)) / 2;
-            Pp(i,j) = temp;
-            Pp(j,i) = temp;
-        end
-    end
+    Pp = (Pp + Pp') / 2;
 end
 
 d = eig(Pp);
 if ~all(d > -2*eps)
     disp('updated covariance is not semipositive definite')
-%     pause
+    pause
 end
 
 

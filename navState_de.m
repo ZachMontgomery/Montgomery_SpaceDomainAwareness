@@ -1,19 +1,12 @@
 function xhatdot = navState_de(xhat,input)
 %navState_de computes the derivative of the nav state
-%
-% Inputs:
-%   xhat = nav state (mixed units)
-%   input = input (mixed units)
-%
-% Outputs
-%   xhatdot = nav state derivative (mixed units)
-%
-% Example Usage
-% xhatdot = navState_de(xhat,input)
-
-
-% Unpack the inputs
+%% Unpack the inputs
 simpar = input.simpar;
+% unpack unit conversions
+pc = simpar.Constants.posCover;
+vc = simpar.Constants.velCover;
+bc = simpar.Constants.biaCover;
+ac = simpar.Constants.atmCover;
 % number of assets
 Na = simpar.general.n_assets;
 %% Compute individual elements of x_dot
@@ -25,11 +18,11 @@ for i=1:Na
     xhatdot(i) = -xhat(i) / simpar.Constants.tauBias;                       % Eq 19
 end
 % position dot of target equals velocity of target
-xhatdot(Na+1:Na+3) = xhat(Na+4:Na+6);                                       % Eq 20
+xhatdot(Na+1:Na+3) = xhat(Na+4:Na+6) / vc * pc;                             % Eq 20
 % velocity dot of the target equals gravity + atmo accel
-xhatdot(Na+4:Na+6) = -simpar.Constants.muEarth ...
-    / norm(xhat(Na+1:Na+3))^3 * xhat(Na+1:Na+3) + xhat(Na+7:Na+9);          % Eq 21
+xhatdot(Na+4:Na+6) = (-simpar.Constants.muEarth ...
+    / norm(xhat(Na+1:Na+3) / pc)^3 * xhat(Na+1:Na+3) / pc + ...
+    xhat(Na+7:Na+9) / ac) * vc;                                             % Eq 21
 % a_atmo dot
-% tau = 500;  % set tau for a_atmo to 500 seconds
 xhatdot(Na+7:Na+9) = -xhat(Na+7:Na+9)/simpar.Constants.tauAtmo;             % Eq 22
 end

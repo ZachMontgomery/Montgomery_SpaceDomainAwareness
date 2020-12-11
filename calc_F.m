@@ -5,6 +5,8 @@ function [ F ] = calc_F( xhat, simpar )
 
 Na = simpar.general.n_assets;
 mu = simpar.Constants.muEarth;
+pc = simpar.Constants.posCover;
+
 
 TauBias = -1/simpar.Constants.tauBias * eye(Na);
 TauAtmo = -1/simpar.Constants.tauAtmo * eye(3);
