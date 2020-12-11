@@ -21,17 +21,20 @@ Na = simpar.general.n_assets;
 % initialize error vector to zeros
 delx = zeros(simpar.general.n_design,1);
 
-% biases were randomized in the truth state, so they need to be left to
-% zero here
+if simpar.general.process_noise_enable
 
-% loop thru axis
-axis = {'x', 'y', 'z'};
-for i=1:3
-    % set position error
-    delx(Na+i)   = simpar.nav.ic.(['sig_p',axis{i}]) * randn;
-    % set velocity error
-    delx(Na+3+i) = simpar.nav.ic.(['sig_v',axis{i}]) * randn;
-    % atmo accelerations errors were set in the truth state
+    % biases were randomized in the truth state, so they need to be left to
+    % zero here
+
+    % loop thru axis
+    axis = {'x', 'y', 'z'};
+    for i=1:3
+        % set position error
+        delx(Na+i)   = simpar.nav.ic.(['sig_p',axis{i}]) * randn;
+        % set velocity error
+        delx(Na+3+i) = simpar.nav.ic.(['sig_v',axis{i}]) * randn;
+        % atmo accelerations errors were set in the truth state
+    end
 end
 
 % inject the errors to create xhat
@@ -40,9 +43,10 @@ xhat = injectErrors(truth2nav(x, simpar), delx, simpar);
 % since the biases and atmo accelerations were set in the truth state, the
 % xhat must be set to zero for these states, otherwise these states always
 % start with 0 estimated error
-xhat(1:Na) = 0.;
-xhat(Na+6+1:end) = 0.;
-
+if simpar.general.process_noise_enable
+    xhat(1:Na) = 0.;
+    xhat(Na+6+1:end) = 0.;
+end
 
 % xhat = truth2nav(x, simparams);
 

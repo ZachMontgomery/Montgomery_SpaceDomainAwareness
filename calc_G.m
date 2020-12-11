@@ -9,14 +9,25 @@ end
 Ntdoa = Na - 1;
 
 %% Compute G
-G = zeros(Ntdoa,Na);
-cnt = 0;
-% for i=1:Na-1
-    i = 1;
-    for j=i+1:Na
-        cnt = cnt + 1;
-        G(cnt,i) = 1;
-        G(cnt,j) = -1;
+if simpar.general.Randys_R_def_enable
+    G = eye(Ntdoa);
+else
+    G = zeros(Ntdoa,Na);
+    cnt = 0;
+    if simpar.general.all_tdoa_enable
+        for i=1:Na-1
+            for j=i+1:Na
+                cnt = cnt + 1;
+                G(cnt,i) = 1;
+                G(cnt,j) = -1;
+            end
+        end
+    else
+        i = 1;
+        for j=i+1:Na
+            cnt = cnt + 1;
+            G(cnt,i) = 1;
+            G(cnt,j) = -1;
+        end
     end
-% end
 end

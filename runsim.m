@@ -11,11 +11,14 @@ t_kalman = (0:nstep_aid)'.*simpar.general.dt_kalmanUpdate;
 nstep_aid = length(t_kalman);
 
 Na = simpar.general.n_assets;
-Ntdoa = 0;
-for i=1:Na-1
-    Ntdoa = Ntdoa + i;
+if simpar.general.all_tdoa_enable
+    Ntdoa = 0;
+    for i=1:Na-1
+        Ntdoa = Ntdoa + i;
+    end
+else
+    Ntdoa = Na - 1;
 end
-Ntdoa = Na - 1;
 Nd = simpar.general.n_design;
 
 axis = {'x','y','z'};
@@ -96,7 +99,8 @@ for i=2:nstep
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %   Realize a sample of process noise (don't forget to scale Q by 1/dt!)
     %   Define any inputs to the truth state DE
-    input_truth.w = sqrt(Q / simpar.general.dt) * randn(Na+6,1);  
+    input_truth.w = sqrt(Q / simpar.general.dt) * randn(Na+6,1) * ...
+        simpar.general.process_noise_enable;  
     input_truth.simpar = simpar;
     
     % debugging by turning of some error sources
@@ -172,7 +176,11 @@ for i=2:nstep
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % prep the inputs for measurement synthesation
-        input_synthMeas.nu = R * randn(Na,1);
+        if simpar.general.Randys_R_def_enable
+            input_synthMeas.nu = R * randn(Ntdoa,1) * simpar.general.tdoa_meas_noise_enable;
+        else
+            input_synthMeas.nu = R * randn(Na,1) * simpar.general.tdoa_meas_noise_enable;
+        end
         input_synthMeas.simpar = simpar;
         % synthesize measurement        
         ztilde_tdoa(:,k) = tdoa.synthesize_measurement(x_buff(:,i), ...
@@ -207,6 +215,20 @@ for i=2:nstep
         P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, ...
             P_buff(:,:,i), G, R, simpar);
         xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
+        
+%         for j=1:Ntdoa
+%             
+%             resCov_tdoa(j,:,k) = compute_residual_cov(H_tdoa(j,:),P_buff(j,:,i),G,R);
+%             K_tdoa_buff(:,:,k) = compute_Kalman_gain(P_buff(:,:,i), ...
+%                 H_tdoa,resCov_tdoa(:,:,k), simpar.general.TDOA_Kalman_update_enable);
+%             del_x = estimate_error_state_vector(K_tdoa_buff(:,:,k),...
+%                 tdoa.compute_residual(ztilde_tdoa(:,k), ztildehat_tdoa(:,k)));
+%             P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, ...
+%                 P_buff(:,:,i), G, R, simpar);
+%             xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
+%             
+%         end
+        
     end
     if verbose && mod(i,100) == 0
         fprintf('%0.1f%% complete\n',100 * i/nstep);

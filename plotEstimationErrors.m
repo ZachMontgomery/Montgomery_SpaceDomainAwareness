@@ -24,7 +24,7 @@ for i = 1:Ntdoa
     stairs(traj.time_kalman, ...
         -3.*sqrt(squeeze(traj.navResCov.tdoa(i,i,:))),'r--');
     xlabel('time (sec)');
-    ylabel(sprintf('TDOA between assets %d and %d',1,i+1));
+    ylabel(sprintf('TDOA residual of assets %d and %d, (ns)',1,i+1));
     grid on;
 end
 
@@ -36,7 +36,7 @@ for i = 1:Na
     stairs(traj.time_nav,  3.*sqrt(squeeze(navCov(i,i,:))),'r--');
     stairs(traj.time_nav, -3.*sqrt(squeeze(navCov(i,i,:))),'r--');
     xlabel('time (sec)');
-    ylabel(sprintf('Clocking bias of asset %d (sec)', i));
+    ylabel(sprintf('Clocking bias of asset %d (ns)', i));
     legend('error','3-sigma');
     grid on;
 end
@@ -51,7 +51,35 @@ for i = 1:3
     stairs(traj.time_nav,  3.*sqrt(squeeze(navCov(j,j,:))),'r--');
     stairs(traj.time_nav, -3.*sqrt(squeeze(navCov(j,j,:))),'r--');
     xlabel('time (sec');
-    ylabel(sprintf('Estimated error of the %s position (m)',axisName{i}));
+    ylabel(sprintf('Estimated error of %s position (m)',axisName{i}));
+    legend('error','3-sigma');
+    grid on;
+end
+
+%% velocity error
+for i = 1:3
+    j = Na + 3 + i;
+    h_figs(end+1) = figure('Name',sprintf('est_error_vel_%d',i));
+    stairs(traj.time_nav, nav_errors(j,:));
+    hold on;
+    stairs(traj.time_nav,  3.*sqrt(squeeze(navCov(j,j,:))),'r--');
+    stairs(traj.time_nav, -3.*sqrt(squeeze(navCov(j,j,:))),'r--');
+    xlabel('time (sec');
+    ylabel(sprintf('Estimated error of %s velocity (cm/s)',axisName{i}));
+    legend('error','3-sigma');
+    grid on;
+end
+
+%% atmo error
+for i = 1:3
+    j = Na + 6 + i;
+    h_figs(end+1) = figure('Name',sprintf('est_error_atmo_%d',i));
+    stairs(traj.time_nav, nav_errors(j,:));
+    hold on;
+    stairs(traj.time_nav,  3.*sqrt(squeeze(navCov(j,j,:))),'r--');
+    stairs(traj.time_nav, -3.*sqrt(squeeze(navCov(j,j,:))),'r--');
+    xlabel('time (sec');
+    ylabel(sprintf('Estimated error of %s atmo accel (dnm/s^2)',axisName{i}));
     legend('error','3-sigma');
     grid on;
 end

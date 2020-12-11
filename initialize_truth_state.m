@@ -24,7 +24,12 @@ for i=1:Na
         x((i-1)*simpar.general.n_chaser+3+j) = simpar.general.ic.(['v',int2str(i),axis{j}]);
     end
     % set bias initial condition for the ith asset
-    x(Na*simpar.general.n_chaser+i) = simpar.truth.ic.(['sig_b',int2str(i)]) * randn;
+    if simpar.general.process_noise_enable
+        x(Na*simpar.general.n_chaser+i) = simpar.truth.ic.(['sig_b',int2str(i)]) * ...
+            randn;
+    else
+        x(Na*simpar.general.n_chaser+i) = simpar.general.ic.(['b',int2str(i)]);
+    end
 end
 
 % set the indexer
@@ -36,7 +41,11 @@ for j=1:3
     % set velocity initial condition for target at the jth axis
     x(i+3+j) = simpar.general.ic.(['vt',axis{j}]);
     % set atmo accel initial condition at the jth axis
-    x(i+6+j) = simpar.truth.ic.(['sig_a',axis{j}]) * randn;
+    if simpar.general.process_noise_enable
+        x(i+6+j) = simpar.truth.ic.(['sig_a',axis{j}]) * randn;
+    else
+        x(i+6+j) = simpar.general.ic.(['a',axis{j}]);
+    end
 end
 
 

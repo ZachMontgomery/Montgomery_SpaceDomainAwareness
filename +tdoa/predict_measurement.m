@@ -26,35 +26,54 @@ bhat = xhat(1:Na);
 phattarget = xhat(Na+1:Na+3);
 %% calculate the tdoa measuremnts
 % compute the number of tdoa measurements
-N_tdoa = 0;
-for ii=1:Na-1
-    N_tdoa = N_tdoa + ii;
+if simpar.general.all_tdoa_enable
+    N_tdoa = 0;
+    for ii=1:Na-1
+        N_tdoa = N_tdoa + ii;
+    end
+else
+    N_tdoa = Na-1;
 end
-N_tdoa = Na-1;
 % initialize the true distance difference vector
 del_r_true = zeros(N_tdoa,1);
 % loop thru the tdoa measurement indexes (i,j) and compute the true
 % distance difference vector
-cnt = 0;
-% for i=1:Na-1
+if simpar.general.all_tdoa_enable
+    cnt = 0;
+    for i=1:Na-1
+        for j=i+1:Na
+            cnt = cnt + 1;
+            del_r_true(cnt) = norm( phattarget - p(:,i) ) - norm( phattarget - p(:,j) );  % part of Eq 28
+        end
+    end
+else
+    cnt = 0;
     i = 1;
     for j=i+1:Na
         cnt = cnt + 1;
         del_r_true(cnt) = norm( phattarget - p(:,i) ) - norm( phattarget - p(:,j) );  % part of Eq 28
     end
-% end
+end
 % compute the true tdoa measurement
 del_tdoa_true = del_r_true / simpar.Constants.c / pc * bc;   % another part of Eq 28
 % initialize the actual tdoa measurement
 del_tdoa = zeros(N_tdoa,1);
 % loope thru the tdoa measurement indexed (i,j) and compute the actual tdoa
 % measurements
-cnt = 0;
-% for i=1:Na-1
+if simpar.general.all_tdoa_enable
+    cnt = 0;
+    for i=1:Na-1
+        for j=i+1:Na
+            cnt = cnt + 1;
+            del_tdoa(cnt) = del_tdoa_true(cnt) + bhat(i) - bhat(j);  % final part of Eq 28
+        end
+    end
+else
+    cnt = 0;
     i = 1;
     for j=i+1:Na
         cnt = cnt + 1;
         del_tdoa(cnt) = del_tdoa_true(cnt) + bhat(i) - bhat(j);  % final part of Eq 28
     end
-% end
+end
 end

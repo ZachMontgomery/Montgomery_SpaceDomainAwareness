@@ -14,12 +14,12 @@ Nc = simpar.general.n_chaser;
 axisName = {'x', 'y', 'z'};
 ylabels = {};
 for i=1:Na
-    ylabels{i} = ['Asset ',int2str(i), ' clocking bias (sec)'];
+    ylabels{i} = ['Asset ',int2str(i), ' clocking bias (ns)'];
 end
 for i=1:3
     ylabels{Na+i}   = ['RSO target ',axisName{i},' position (m)'];
-    ylabels{Na+3+i} = ['RSO target ',axisName{i},' velocity (m/s)'];
-    ylabels{Na+6+i} = ['Atmospheric ',axisName{i},' acceleration (m/s^2)'];
+    ylabels{Na+3+i} = ['RSO target ',axisName{i},' velocity (cm/s)'];
+    ylabels{Na+6+i} = ['Atmospheric ',axisName{i},' acceleration (dnm/s^2)'];
 end
 for i=1:n
     hfigs(end + 1) = figure('Name',sprintf('est_err_%d',i)); %#ok<*AGROW>
