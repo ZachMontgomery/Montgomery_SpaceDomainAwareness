@@ -6,6 +6,9 @@ function del_tdoa = synthesize_measurement( x, input )
 simpar = input.simpar;
 nu = input.nu;
 
+pc = simpar.Constants.posCover;
+bc = simpar.Constants.biaCover;
+
 %% extract position matrices
 % determine the number of chaser assets
 Na = simpar.general.n_assets;
@@ -40,11 +43,11 @@ cnt = 0;
     i = 1;
     for j=i+1:Na
         cnt = cnt + 1;
-        del_r_true(cnt) = norm( ptarget - p(:,i) ) - norm( ptarget - p(:,j) );  % part of Eq 26
+        del_r_true(cnt) = norm(ptarget - p(:,i)) - norm(ptarget - p(:,j));  % part of Eq 28
     end
 % end
 % compute the true tdoa measurement
-del_tdoa_true = del_r_true / simpar.Constants.c;                % remianing part of Eq 26
+del_tdoa_true = del_r_true / simpar.Constants.c / pc * bc;        % remianing part of Eq 28
 % initialize the actual tdoa measurement
 del_tdoa = zeros(N_tdoa,1);
 % loop thru the tdoa measurement indexed (i,j) and compute the actual tdoa
@@ -54,7 +57,7 @@ cnt = 0;
     i = 1;
     for j=i+1:Na
         cnt = cnt + 1;
-        del_tdoa(cnt) = del_tdoa_true(cnt) + nu(i) - nu(j) + b(i) - b(j);   % Eq 25
+        del_tdoa(cnt) = del_tdoa_true(cnt) + nu(i) - nu(j) + b(i) - b(j);   % Eq 29
     end
 % end
 end

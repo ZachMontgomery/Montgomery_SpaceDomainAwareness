@@ -86,8 +86,10 @@ end
 
 %% Compute the constant process noise PSD's
 Q = calc_Q( simpar );
+B = calc_B(simpar);
 %% Compute the constant measurement noise matrix R
 R = calc_R(simpar);
+G = calc_G(simpar);
 %% Loop over each time step in the simulation
 for i=2:nstep
     % Propagate truth states to t_n
@@ -124,6 +126,8 @@ for i=2:nstep
     %   Assign inputs to the navigation covariance DE
     input_cov.simpar = simpar;
     input_cov.xhat = xhat_buff(:,i-1);
+    input_cov.Q = Q;
+    input_cov.B = B;
     %   Perform one step of RK4 integration
     P_buff(:,:,i) = rk4('navCov_de', P_buff(:,:,i-1), input_cov, ...
             simpar.general.dt);
@@ -196,10 +200,12 @@ for i=2:nstep
             ztildehat_tdoa(:,k));
         
         resCov_tdoa(:,:,k) = compute_residual_cov(H_tdoa,P_buff(:,:,i),G,R);
-        K_tdoa_buff(:,:,k) = compute_Kalman_gain(P_buff(:,:,i),H_tdoa,resCov_tdoa(:,:,k));
+        K_tdoa_buff(:,:,k) = compute_Kalman_gain(P_buff(:,:,i), ...
+            H_tdoa,resCov_tdoa(:,:,k), simpar.general.TDOA_Kalman_update_enable);
         del_x = estimate_error_state_vector(K_tdoa_buff(:,:,k),...
             tdoa.compute_residual(ztilde_tdoa(:,k), ztildehat_tdoa(:,k)));
-        P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, P_buff(:,:,i), G, R, simpar);
+        P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, ...
+            P_buff(:,:,i), G, R, simpar);
         xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
     end
     if verbose && mod(i,100) == 0

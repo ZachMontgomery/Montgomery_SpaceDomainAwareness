@@ -4,6 +4,10 @@ function del_tdoa = predict_measurement( xhat, input )
 %% extract input parameters
 simpar = input.simpar;
 x = input.chaserStates;         % this only contains the chaser positions and velocities
+
+pc = simpar.Constants.posCover;
+bc = simpar.Constants.biaCover;
+
 %% extract position matrices
 % determine the number of chaser assets
 Na = simpar.general.n_assets;
@@ -40,7 +44,7 @@ cnt = 0;
     end
 % end
 % compute the true tdoa measurement
-del_tdoa_true = del_r_true / simpar.Constants.c;   % another part of Eq 28
+del_tdoa_true = del_r_true / simpar.Constants.c / pc * bc;   % another part of Eq 28
 % initialize the actual tdoa measurement
 del_tdoa = zeros(N_tdoa,1);
 % loope thru the tdoa measurement indexed (i,j) and compute the actual tdoa
