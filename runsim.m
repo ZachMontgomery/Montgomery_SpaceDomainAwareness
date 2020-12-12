@@ -207,28 +207,28 @@ for i=2:nstep
         res_tdoa(:,k) = tdoa.compute_residual(ztilde_tdoa(:,k), ...
             ztildehat_tdoa(:,k));
         
-        resCov_tdoa(:,:,k) = compute_residual_cov(H_tdoa,P_buff(:,:,i),G,R);
-        K_tdoa_buff(:,:,k) = compute_Kalman_gain(P_buff(:,:,i), ...
-            H_tdoa,resCov_tdoa(:,:,k), simpar.general.TDOA_Kalman_update_enable);
-        del_x = estimate_error_state_vector(K_tdoa_buff(:,:,k),...
-            tdoa.compute_residual(ztilde_tdoa(:,k), ztildehat_tdoa(:,k)));
-        P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, ...
-            P_buff(:,:,i), G, R, simpar);
-        xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
-        
-%         for j=1:Ntdoa
-%             
-%             resCov_tdoa(j,:,k) = compute_residual_cov(H_tdoa(j,:),P_buff(j,:,i),G,R);
-%             K_tdoa_buff(:,:,k) = compute_Kalman_gain(P_buff(:,:,i), ...
-%                 H_tdoa,resCov_tdoa(:,:,k), simpar.general.TDOA_Kalman_update_enable);
-%             del_x = estimate_error_state_vector(K_tdoa_buff(:,:,k),...
-%                 tdoa.compute_residual(ztilde_tdoa(:,k), ztildehat_tdoa(:,k)));
-%             P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, ...
-%                 P_buff(:,:,i), G, R, simpar);
-%             xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
-%             
-%         end
-        
+        if ~simpar.general.all_tdoa_enable
+            resCov_tdoa(:,:,k) = compute_residual_cov(H_tdoa,P_buff(:,:,i),G,R);
+            K_tdoa_buff(:,:,k) = compute_Kalman_gain(P_buff(:,:,i), ...
+                H_tdoa,resCov_tdoa(:,:,k), simpar.general.TDOA_Kalman_update_enable);
+            del_x = estimate_error_state_vector(K_tdoa_buff(:,:,k),...
+                tdoa.compute_residual(ztilde_tdoa(:,k), ztildehat_tdoa(:,k)));
+            P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,:,k), H_tdoa, ...
+                P_buff(:,:,i), G, R, simpar);
+            xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
+        else
+            for j=1:Ntdoa
+                resCov_tdoa(j,j,k) = compute_residual_cov(H_tdoa(j,:),P_buff(:,:,i),G(j,:),R);
+                K_tdoa_buff(:,j,k) = compute_Kalman_gain(P_buff(:,:,i), ...
+                    H_tdoa(j,:),resCov_tdoa(j,j,k), simpar.general.TDOA_Kalman_update_enable);
+                del_x = estimate_error_state_vector(K_tdoa_buff(:,j,k),...
+                    tdoa.compute_residual(ztilde_tdoa(j,k), ztildehat_tdoa(j,k)));
+                P_buff(:,:,i) = update_covariance(K_tdoa_buff(:,j,k), H_tdoa(j,:), ...
+                    P_buff(:,:,i), G(j,:), R, simpar);
+                xhat_buff(:,i) = correctErrors(xhat_buff(:,i),del_x,simpar);
+
+            end
+        end
     end
     if verbose && mod(i,100) == 0
         fprintf('%0.1f%% complete\n',100 * i/nstep);

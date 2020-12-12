@@ -14,18 +14,32 @@ h_figs = [];
 
 %% TDOA residuals
 Na = simpar.general.n_assets;
-Ntdoa = Na - 1;
-for i = 1:Ntdoa
-    h_figs(end+1) = figure('Name',sprintf('res_tdoa_%d',i));
-    stairs(traj.time_kalman, traj.navRes.tdoa(i,:)');
-    hold on
-    stairs(traj.time_kalman, ...
-        3.*sqrt(squeeze(traj.navResCov.tdoa(i,i,:))),'r--');
-    stairs(traj.time_kalman, ...
-        -3.*sqrt(squeeze(traj.navResCov.tdoa(i,i,:))),'r--');
-    xlabel('time (sec)');
-    ylabel(sprintf('TDOA residual of assets %d and %d, (ns)',1,i+1));
-    grid on;
+if simpar.general.all_tdoa_enable
+    Ntdoa = 0;
+    for i=1:Na-1
+        Ntdoa = Ntdoa + i;
+    end
+else
+    Ntdoa = Na - 1;
+end
+cnt = 0;
+for i = 1:Na-1
+    for j = i+1:Na
+        cnt = cnt + 1;
+        if cnt > Ntdoa
+            break
+        end
+        h_figs(end+1) = figure('Name',sprintf('res_tdoa_%d',i));
+        stairs(traj.time_kalman, traj.navRes.tdoa(i,:)');
+        hold on
+        stairs(traj.time_kalman, ...
+            3.*sqrt(squeeze(traj.navResCov.tdoa(i,i,:))),'r--');
+        stairs(traj.time_kalman, ...
+            -3.*sqrt(squeeze(traj.navResCov.tdoa(i,i,:))),'r--');
+        xlabel('time (sec)');
+        ylabel(sprintf('TDOA residual of assets %d and %d, (ns)',i,j));
+        grid on;
+    end
 end
 
 %% clocking bias error
