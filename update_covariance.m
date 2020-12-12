@@ -17,10 +17,9 @@ if ~issymmetric(Pp)
 end
 
 d = eig(Pp);
-% if ~all(d > -2*eps)
-%     disp('updated covariance is not semipositive definite')
-%     pause
-% end
-assert( all(d > -2*eps), 'Updated covariance matrix is NOT semipositive definite' )
+if ~all(d > -2*eps)
+    disp('updated covariance is not semipositive definite')
+end
+% assert( all(d > -2*eps), 'Updated covariance matrix is NOT semipositive definite' )
 
 end

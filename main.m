@@ -23,10 +23,10 @@ savefile.savedir = savedir;
 savefile.filename = filename;
 %% Read in the simulation parameters
 %Define the simparams
-checkProp = 1;
+checkProp = 0;
 runSingleMonteCarlo = 0;
-runMonteCarlo = 0;
-savefigs = 0;
+runMonteCarlo = 1;
+savefigs = 1;
 [ simpar, ~ ] = createSimParams( paramfile );
 %% Ensure certain flags are not enabled for certain runs
 if simpar.general.measLinerizationCheckEnable
@@ -71,16 +71,17 @@ if runSingleMonteCarlo
     h_figs_single_mc = plotEstimationErrors(traj_single_mc, simpar);
     if savefigs
         disp('Saving Single Monte Carlo plots...')
-        for i = 1:length(h_figs_single_mc)
-            h = h_figs_single_mc(i);
-            filesubstr = matlab.lang.makeValidName(get(h,'Name'));
-            figfilename = sprintf('singleMonteCarlo_%d__%s',i,filesubstr);
-            set(h,'renderer','Painters');
-            saveas(h,fullfile(savedir,figfilename),'fig');
-            saveas(h,fullfile(savedir,figfilename),'png');
-            saveas(h,fullfile(savedir,figfilename),'espc');
-        end
-        disp('Plots saved.')
+%         for i = 1:length(h_figs_single_mc)
+%             h = h_figs_single_mc(i);
+%             filesubstr = matlab.lang.makeValidName(get(h,'Name'));
+%             figfilename = sprintf('singleMonteCarlo_%d__%s',i,filesubstr);
+%             set(h,'renderer','Painters');
+%             saveas(h,fullfile(savedir,figfilename),'fig');
+%             saveas(h,fullfile(savedir,figfilename),'png');
+%             saveas(h,fullfile(savedir,figfilename),'espc');
+%         end
+%         disp('Plots saved.')
+        save_plots(h_figs_single_mc, 'singleMC', savedir);
     end
 end
 %% Run Multiple Monte Carlos

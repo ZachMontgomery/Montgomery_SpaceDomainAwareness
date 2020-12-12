@@ -177,9 +177,9 @@ for i=2:nstep
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % prep the inputs for measurement synthesation
         if simpar.general.Randys_R_def_enable
-            input_synthMeas.nu = R * randn(Ntdoa,1) * simpar.general.tdoa_meas_noise_enable;
+            input_synthMeas.nu = sqrt(R) * randn(Ntdoa,1) * simpar.general.tdoa_meas_noise_enable;
         else
-            input_synthMeas.nu = R * randn(Na,1) * simpar.general.tdoa_meas_noise_enable;
+            input_synthMeas.nu = sqrt(R) * randn(Na,1) * simpar.general.tdoa_meas_noise_enable;
         end
         input_synthMeas.simpar = simpar;
         % synthesize measurement        

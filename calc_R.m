@@ -4,11 +4,10 @@ function R = calc_R( simpar )
 %% Unpack the inputs
 Na = simpar.general.n_assets;
 
-E = 20;     % total clocking error, bias + noise, 1 sigma
 sigmaSq = zeros(Na,1);
 for i=1:Na
     % amount of noise error is total error - bias error
-    sigmaSq(i) = (E - simpar.nav.ic.(['sig_b',int2str(i)]))^2;
+    sigmaSq(i) = simpar.nav.params.(['sig_nu',int2str(i),'_ss'])^2;
 end
 
 if ~simpar.general.Randys_R_def_enable
