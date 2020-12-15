@@ -1,14 +1,6 @@
 function checkErrorDefConsistency( xhat, x, simpar )
 %checkErrorDefConsistency checks consistency of the error injection,
 %calcuation, and correction functions.
-%
-% Inputs:
-%   simpar = description (units)
-%   x = description (units)
-%
-% Example Usage
-% checkErrorDefConsistency( simpar, x )
-%
 
 % initialize dele vector
 dele = zeros(simpar.general.n_design,1);

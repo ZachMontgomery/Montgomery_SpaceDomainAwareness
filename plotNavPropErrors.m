@@ -10,149 +10,117 @@ function h_figs = plotNavPropErrors(traj)
 h_figs = [];
 simpar = traj.simpar;
 Na = simpar.general.n_assets;
+Nc = simpar.general.n_chaser;
+if simpar.general.all_tdoa_enable
+    Ntdoa = 0;
+    for i=1:Na-1
+        Ntdoa = Ntdoa + i;
+    end
+else
+    Ntdoa = Na - 1;
+end
 
-%% plot positions
-% h_figs(end+1) = figure;
-% plot(traj.time_nav, traj.truthState(7*Na+1,:))
-% hold all
-% grid on;
-% plot(traj.time_nav, traj.truthState(7*Na+2,:))
-% plot(traj.time_nav, traj.truthState(7*Na+3,:))
-% xlabel('time (sec)')
-% ylabel('km')
-% legend('x','y','z')
+%% Plot Trajectories
+h_figs(end + 1) = figure('Name',sprintf('Reference Trajectory'));
+% target orbit line
+I = Nc * Na + Na;
+lines = [];
+lines(1) = plot3(traj.truthState(I+1,:),...
+      traj.truthState(I+2,:),...
+      traj.truthState(I+3,:),'k');
+hold on;
+grid on;
+% asset orbit lines
+colorz = {  '#0072BD',...
+            '#D95319',...
+            '#EDB120',...
+            '#7E2F8E',...
+            '#77AC30',...
+            '#4DBEEE',...
+            '#A2142F'};
+for i=1:Na
+    I = (i-1)*Nc;
+    lines(1+i) = plot3(traj.truthState(I+1,:),...
+          traj.truthState(I+2,:),...
+          traj.truthState(I+3,:),'Color',colorz{i});
+end
+% plot starting locations
+I = Nc * Na + Na;
+plot3(traj.truthState(I+1,1),...
+      traj.truthState(I+2,1),...
+      traj.truthState(I+3,1),'ko')
+for i=1:Na
+    I = (i-1)*Nc;
+    plot3(traj.truthState(I+1,1),...
+          traj.truthState(I+2,1),...
+          traj.truthState(I+3,1),'Color',colorz{i},'Marker','o')
+end
+legend(lines,'Target',  'Asset 1',...
+                        'Asset 2',...
+                        'Asset 3',...
+                        'Asset 4',...
+                        'Asset 5',...
+                        'Asset 6',...
+                        'Asset 7')
+axis equal
+
 
 %% plot residuals
-h_figs(end+1) = figure;
+h_figs(end+1) = figure('Name',sprintf('Measurement_Residuals'));
 plot(traj.time_kalman, traj.navRes.tdoa)
 grid on;
-xlabel('time (sec)')
-ylabel('TDOA residual (sec)')
-legend( '$\tilde{z}_{12} - \hat{\tilde{z}}_{12}$',...
-        '$\tilde{z}_{13} - \hat{\tilde{z}}_{13}$',...
-        '$\tilde{z}_{23} - \hat{\tilde{z}}_{23}$',...
-        'Interpreter', 'latex')
+xlabel('time (s)')
+ylabel('TDOA residual (ns)')
+labels = {};
+cnt = 0;
+for i = 1:Na-1
+    for j = i+1:Na
+        cnt = cnt + 1;
+        if cnt > Ntdoa
+            break
+        end
+        nums = [int2str(i),int2str(j)];
+        labels{cnt} = ['$\tilde{z}_{',nums,'} - \hat{\tilde{z}}_{',nums,'}$'];
+    end
+end
+legend( labels ,'Interpreter', 'latex')
 
 %% plot actual TDOA measurements
-h_figs(end+1) = figure;
+h_figs(end+1) = figure('Name',sprintf('Measurements'));
 plot(traj.time_kalman, traj.ztilde_tdoa)
-legend('12','13','23')
-xlabel('time (sec)')
-ylabel('$\tilde{z}$ (sec)', 'Interpreter', 'latex')
-legend( '$\tilde{z}_{12}$',...
-        '$\tilde{z}_{13}$',...
-        '$\tilde{z}_{23}$',...
-        'Interpreter', 'latex')
+xlabel('time (s)')
+ylabel('$\tilde{z}$ (ns)', 'Interpreter', 'latex')
+labels = {};
+cnt = 0;
+for i = 1:Na-1
+    for j = i+1:Na
+        cnt = cnt + 1;
+        if cnt > Ntdoa
+            break
+        end
+        nums = [int2str(i),int2str(j)];
+        labels{cnt} = ['$\tilde{z}_{',nums,'}$'];
+    end
+end
+legend( labels,'Interpreter', 'latex')
 grid on;
 
 %% plot estimation errors
-h_figs(end+1) = figure;
-plot(traj.time_nav, traj.est_error)
-xlabel('time (sec)')
-% title('Estimation Errors Eq. (9)')
+h_figs(end+1) = figure('Name',sprintf('Estimation_Errors'));
+nav_errors = calcErrors( traj.navState, traj.truthState, simpar );
+plot(traj.time_nav, nav_errors)
+xlabel('time (s)')
 grid on;
-legend('bias 1', 'bias 2', 'bias 3',...
-    'px target', 'py target', 'pz target',...
-    'vx target', 'vy target', 'vz target',...
-    'ax atmo', 'ay atmo', 'az atmo',...
-    'NumColumns', 4)
+labels = {};
+for i=1:Na;
+    labels{i} = ['bias ',int2str(i)];
+end
+axisName = {'x', 'y', 'z'};
+for i=1:3;
+    labels{Na+i}   = ['p',axisName{i},' target'];
+    labels{Na+3+i} = ['v',axisName{i},' target'];
+    labels{Na+6+i} = ['a',axisName{i},' atmo'];
+end
+legend(labels,'NumColumns', 4)
     
-
-% %
-% m2km = 1/1000;
-%% Plot trajectory
-% h_figs(end+1) = figure;
-% htraj = plot3(traj.truthState(simpar.states.ix.pos(1),:)'*m2km,...
-%     traj.truthState(simpar.states.ix.pos(2),:)'*m2km,...
-%     traj.truthState(simpar.states.ix.pos(3),:)'*m2km,...
-%     'LineWidth',2);
-% hold all
-% hstart = scatter3(traj.truthState(simpar.states.ix.pos(1),1)'*m2km,...
-%     traj.truthState(simpar.states.ix.pos(2),1)'*m2km,...
-%     traj.truthState(simpar.states.ix.pos(3),1)'*m2km,...
-%     'filled','g');
-% hstop = scatter3(traj.truthState(simpar.states.ix.pos(1),end)'*m2km,...
-%     traj.truthState(simpar.states.ix.pos(2),end)'*m2km,...
-%     traj.truthState(simpar.states.ix.pos(3),end)'*m2km,...
-%     'filled','r');
-% xlabel('$x_i\left(km\right)$','Interpreter','latex')
-% ylabel('$y_i\left(km\right)$','Interpreter','latex')
-% zlabel('$z_i\left(km\right)$','Interpreter','latex')
-% grid on;
-% axis equal;
-% [X,Y,Z] = sphere;
-% R = simpar.general.R_M/1000;
-% hmoon = surf(X*R,Y*R,Z*R,'FaceAlpha',0.2,...
-%     'FaceColor','k','EdgeAlpha',0.3);
-% legend([htraj, hstart, hstop, hmoon],...
-%     'trajectory','start','stop','moon','Interpreter','latex')
-%% Plot Altitude vs. time
-% r_mag = sqrt(traj.truthState(simpar.states.ix.pos(1),:).^2 ...
-%     + traj.truthState(simpar.states.ix.pos(2),:).^2 ...
-%     + traj.truthState(simpar.states.ix.pos(3),:).^2)*m2km;
-% alt = r_mag - simpar.general.R_M*m2km;
-% h_figs(end+1) = figure;
-% stairs(traj.time_nav,alt);
-% % title('Altitude vs. time');
-% xlabel('time$\left(s\right)$','Interpreter','latex');
-% ylabel('altitude$\left(km\right)$','Interpreter','latex');
-% grid on;
-% %% Plot angular rates
-% h_figs(end+1) = figure;
-% stairs(traj.time_nav,traj.gyro');
-% title('Angular rate');
-% xlabel('time(s)');
-% ylabel('rad/s');
-% legend('x_b','y_b','z_b')
-% grid on;
-%% Plot attitude vs. time
-% nsamp = length(traj.time_nav);
-% q_lvlh2b = zeros(4,nsamp);
-% q_lvlh2c = zeros(4,nsamp);
-% q_b2c = traj.q_b2c_nominal;
-% for i=1:nsamp
-%     q_i2b = traj.truthState(simpar.states.ix.att,i);
-%     q_i2lvlh = tmat2q(inertial2lvlh(traj.truthState(simpar.states.ix.pos,i),...
-%         traj.truthState(simpar.states.ix.vel,i)));
-%     q_lvlh2b(:,i) = qmult(q_i2b,qConjugate(q_i2lvlh));
-%     q_lvlh2c(:,i) = qmult(q_b2c,q_lvlh2b(:,i));
-% end
-% h_figs(end+1) = figure;
-% stairs(traj.time_nav,q_lvlh2c');
-% xlabel('time$\left(s\right)$','Interpreter','latex');
-% ylabel('$q^{lvlh}_{c}$','Interpreter','latex')
-% legend('q_0','q_i','q_j','q_k')
-% grid on;
-%% Plot camera angle of incidence
-% h_figs(end+1) = figure;
-% stairs(traj.time_nav, traj.angle_of_incidence_deg);
-% xlabel('time$\left(s\right)$','Interpreter','latex');
-% ylabel('$\gamma\left(deg\right)$','Interpreter','latex');
-% grid on;
-%% Example residuals
-% h_figs(end+1) = figure;
-% stairs(traj.time_kalman,traj.navRes.example'); hold on
-% xlabel('Time(s)')
-% ylabel('Star Tracker Residuals(rad)')
-% legend('x_{st}','y_{st}','z_{st}')
-% grid on;
-%% Calculate estimation errors
-% dele = calcErrors(traj.navState, traj.truthState, simpar);
-%% Plot position estimation error
-% h_figs(end+1) = figure;
-% stairs(traj.time_nav, dele(simpar.states.ixfe.pos,:)');
-% title('Position Error');
-% xlabel('time(s)');
-% ylabel('m');
-% legend('$x_i$','$y_i$','$z_i$')
-% grid on;
-%% Plot velocity error
-% h_figs(end+1) = figure;
-% stairs(traj.time_nav, dele(simpar.states.ixfe.vel,:)');
-% title('Velocity Error');
-% xlabel('time(s)');
-% ylabel('m/s');
-% legend('x_i','y_i','z_i')
-% grid on;
-% %% Add the remaining estimation error plots
 end
