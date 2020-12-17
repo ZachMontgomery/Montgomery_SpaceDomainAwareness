@@ -30,12 +30,12 @@ for i = 1:Na-1
             break
         end
         h_figs(end+1) = figure('Name',sprintf('res_tdoa_%d',i));
-        stairs(traj.time_kalman, traj.navRes.tdoa(i,:)');
+        stairs(traj.time_kalman, traj.navRes.tdoa(cnt,:)');
         hold on
         stairs(traj.time_kalman, ...
-            3.*sqrt(squeeze(traj.navResCov.tdoa(i,i,:))),'r--');
+            3.*sqrt(squeeze(traj.navResCov.tdoa(cnt,cnt,:))),'r--');
         stairs(traj.time_kalman, ...
-            -3.*sqrt(squeeze(traj.navResCov.tdoa(i,i,:))),'r--');
+            -3.*sqrt(squeeze(traj.navResCov.tdoa(cnt,cnt,:))),'r--');
         xlabel('time (sec)');
         ylabel(sprintf('TDOA residual of assets %d and %d, (ns)',i,j));
         grid on;
@@ -64,7 +64,7 @@ for i = 1:3
     hold on;
     stairs(traj.time_nav,  3.*sqrt(squeeze(navCov(j,j,:))),'r--');
     stairs(traj.time_nav, -3.*sqrt(squeeze(navCov(j,j,:))),'r--');
-    xlabel('time (sec');
+    xlabel('time (sec)');
     ylabel(sprintf('Estimated error of %s position (m)',axisName{i}));
     legend('error','3-sigma');
     grid on;
@@ -78,7 +78,7 @@ for i = 1:3
     hold on;
     stairs(traj.time_nav,  3.*sqrt(squeeze(navCov(j,j,:))),'r--');
     stairs(traj.time_nav, -3.*sqrt(squeeze(navCov(j,j,:))),'r--');
-    xlabel('time (sec');
+    xlabel('time (sec)');
     ylabel(sprintf('Estimated error of %s velocity (cm/s)',axisName{i}));
     legend('error','3-sigma');
     grid on;
@@ -92,7 +92,7 @@ for i = 1:3
     hold on;
     stairs(traj.time_nav,  3.*sqrt(squeeze(navCov(j,j,:))),'r--');
     stairs(traj.time_nav, -3.*sqrt(squeeze(navCov(j,j,:))),'r--');
-    xlabel('time (sec');
+    xlabel('time (sec)');
     ylabel(sprintf('Estimated error of %s atmo accel (dnm/s^2)',axisName{i}));
     legend('error','3-sigma');
     grid on;
