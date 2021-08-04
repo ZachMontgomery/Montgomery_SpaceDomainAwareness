@@ -27,13 +27,17 @@ for i=1:Na
     if simpar.general.process_noise_enable
         x(Na*simpar.general.n_chaser+i) = simpar.truth.ic.(['sig_b',int2str(i)]) * ...
             randn;
+        x(Na*simpar.general.n_chaser+Na+2*i-1) = simpar.truth.ic.('sig_bias_alpha') * ...
+            randn;
+        x(Na*simpar.general.n_chaser+Na+2*i) = simpar.truth.ic.('sig_bias_delta') * ...
+            randn;
     else
         x(Na*simpar.general.n_chaser+i) = simpar.general.ic.(['b',int2str(i)]);
     end
 end
 
 % set the indexer
-i = Na*simpar.general.n_chaser + Na;
+i = Na*simpar.general.n_chaser + 3*Na;
 % loop thru axis
 for j=1:3
     % set position initial condition for target at the jth axis

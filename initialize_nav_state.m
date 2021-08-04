@@ -30,9 +30,9 @@ if simpar.general.process_noise_enable
     axis = {'x', 'y', 'z'};
     for i=1:3
         % set position error
-        delx(Na+i)   = simpar.nav.ic.(['sig_p',axis{i}]) * randn;
+        delx(3*Na+i)   = simpar.nav.ic.(['sig_p',axis{i}]) * randn;
         % set velocity error
-        delx(Na+3+i) = simpar.nav.ic.(['sig_v',axis{i}]) * randn;
+        delx(3*Na+3+i) = simpar.nav.ic.(['sig_v',axis{i}]) * randn;
         % atmo accelerations errors were set in the truth state
     end
 end
@@ -44,8 +44,8 @@ xhat = injectErrors(truth2nav(x, simpar), delx, simpar);
 % xhat must be set to zero for these states, otherwise these states always
 % start with 0 estimated error
 if simpar.general.process_noise_enable
-    xhat(1:Na) = 0.;
-    xhat(Na+6+1:end) = 0.;
+    xhat(1:3*Na) = 0.;
+    xhat(end-2:end) = 0.;
 end
 
 % xhat = truth2nav(x, simparams);

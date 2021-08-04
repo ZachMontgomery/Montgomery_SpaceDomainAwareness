@@ -38,12 +38,19 @@ P_buff          = zeros(simpar.states.nxfe,simpar.states.nxfe,nstep);
 
 % Residual buffers
 res_tdoa        = zeros(Ntdoa,nstep_aid);
+res_radec       = zeros(2*simpar.general.n_assets,nstep_aid);
 
 % TDOA measurement buffers
 ztilde_tdoa     = zeros(Ntdoa,nstep_aid);
 ztildehat_tdoa  = zeros(Ntdoa,nstep_aid);
 resCov_tdoa     = zeros(Ntdoa,Ntdoa,nstep_aid);
 K_tdoa_buff     = zeros(Nd,Ntdoa,nstep_aid);
+
+% RaDec measurement buffers
+ztilde_redec     = zeros(2*simpar.general.n_assets,nstep_aid);
+ztildehat_radec  = zeros(2*simpar.general.n_assets,nstep_aid);
+resCov_radec    = zeros(2*simpar.general.n_assets,2*simpar.general.n_assets,nstep_aid);
+K_radec_buff    = zeros(Nd,2*simpar.general.n_assets,nstep_aid);
 
 %% Initialize Vectors and matrices
 
@@ -99,7 +106,7 @@ for i=2:nstep
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %   Realize a sample of process noise (don't forget to scale Q by 1/dt!)
     %   Define any inputs to the truth state DE
-    input_truth.w = sqrt(Q / simpar.general.dt) * randn(Na+6,1) * ...
+    input_truth.w = sqrt(Q / simpar.general.dt) * randn(3*Na+6,1) * ...
         simpar.general.process_noise_enable;  
     input_truth.simpar = simpar;
     

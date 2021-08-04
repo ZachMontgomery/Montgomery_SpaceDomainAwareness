@@ -51,8 +51,8 @@ for i=1:n
 end
 % simparams.states.nx = max(t.end_idx);
 % simparams.states.nxe = max(t.error_end_idx);
-simparams.states.nx  = 9 + 7 * simparams.general.n_assets;
-simparams.states.nxe = 9 + 7 * simparams.general.n_assets;
+simparams.states.nx  = 9 + 9 * simparams.general.n_assets;
+simparams.states.nxe = 9 + 9 * simparams.general.n_assets;
 
 t = readtable(parameterFile,'sheet','navStateIdx');
 [n,~] = size(t);
